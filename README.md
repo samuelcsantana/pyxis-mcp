@@ -21,8 +21,8 @@ you can revoke at any time.**
 
 </div>
 
-> **Status:** the fifteen tools work against the live Pyxis API; the first version on npm comes
-> next, so until then run it from source (see [Use it](#use-it)).
+> **Status:** on npm as `pyxis-mcp`, every release published from GitHub Actions with
+> provenance. The fifteen tools read the live Pyxis API.
 
 ## Ecosystem
 
@@ -82,18 +82,13 @@ variable and never repeats its value.
 
 ## Use it
 
-Create a token in the dashboard (Settings, Access tokens), then add the server to your client.
-Until the first release is on npm, build it from source and point the client at `dist/cli.js`:
-
-```bash
-git clone https://github.com/samuelcsantana/pyxis-mcp.git
-cd pyxis-mcp && npm ci && npm run build
-```
+Create a token in the dashboard (Settings, Access tokens), then add the server to your client. It
+runs with `npx`, so there is nothing to install beforehand (Node 22 or later).
 
 Claude Code:
 
 ```bash
-claude mcp add pyxis -e PYXIS_TOKEN=pyxis_at_… -- node /path/to/pyxis-mcp/dist/cli.js
+claude mcp add pyxis -e PYXIS_TOKEN=pyxis_at_… -- npx -y pyxis-mcp
 ```
 
 Claude Desktop (`claude_desktop_config.json`) and Cursor (`.cursor/mcp.json`):
@@ -102,17 +97,17 @@ Claude Desktop (`claude_desktop_config.json`) and Cursor (`.cursor/mcp.json`):
 {
   "mcpServers": {
     "pyxis": {
-      "command": "node",
-      "args": ["/path/to/pyxis-mcp/dist/cli.js"],
+      "command": "npx",
+      "args": ["-y", "pyxis-mcp"],
       "env": { "PYXIS_TOKEN": "pyxis_at_…" }
     }
   }
 }
 ```
 
-Once it is on npm, `npx -y pyxis-mcp` replaces `node /path/to/pyxis-mcp/dist/cli.js`. A self-hosted
-Pyxis adds `PYXIS_API_URL`. Keep the token out of shared files and chats; revoke it in the dashboard
-the moment it leaks.
+A self-hosted Pyxis adds `PYXIS_API_URL`. To run it from source instead, `npm ci && npm run build`
+in a clone and use `node /path/to/pyxis-mcp/dist/cli.js` as the command. Keep the token out of
+shared files and chats; revoke it in the dashboard the moment it leaks.
 
 ## Architecture
 
@@ -193,7 +188,7 @@ docs/adr/            architecture decision records
 
 - [x] Repository skeleton, quality gates, configuration reader
 - [x] Tools over the API's read routes, tested against its OpenAPI contract
-- [ ] First release on npm, with provenance
+- [x] First release on npm, with provenance
 - [ ] Setup guides for Claude Code, Claude Desktop and Cursor
 
 ## Contributing and license
