@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
 import { noComments } from './eslint-rules/no-comments.mjs';
 
 export default defineConfig(
-  { ignores: ['dist/', 'coverage/'] },
+  { ignores: ['dist/', 'coverage/', 'contract/'] },
   {
     linterOptions: { noInlineConfig: true, reportUnusedDisableDirectives: 'error' },
     plugins: { local: { rules: { 'no-comments': noComments } } },

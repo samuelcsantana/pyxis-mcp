@@ -1,5 +1,6 @@
 dist/
 coverage/
+contract/
 package-lock.json
 CHANGELOG.md
 CODE_OF_CONDUCT.md
