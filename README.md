@@ -21,8 +21,8 @@ you can revoke at any time.**
 
 </div>
 
-> **Status:** early development. This repository holds the skeleton and the configuration
-> reader; the tools and the first version on npm come next (see [Roadmap](#roadmap)).
+> **Status:** the fifteen tools work against the live Pyxis API; the first version on npm comes
+> next, so until then run it from source (see [Use it](#use-it)).
 
 ## Ecosystem
 
@@ -42,11 +42,33 @@ Pyxis dashboard shows, and nothing more: it uses an access token that only reads
 admin in the dashboard's Settings and revocable there at any moment. Like the rest of Pyxis, there
 is no personal data to hand over: events carry no cookies, no addresses and no user agents.
 
-## Planned tools
+## Tools
 
-One read-only tool per dashboard screen, each a thin call to the matching `GET` route of the API:
-`list_projects`, `overview`, `visits`, `visit_timeline`, `funnel`, `features`, `requests`,
-`acquisition`, `devices` and `engagement`.
+Every tool only reads, and maps to one `GET` route of the Pyxis API. Dates are `YYYY-MM-DD` in the
+project's time zone; `list_projects` gives each project's today, so call it first.
+
+| Tool               | What it answers                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------- |
+| `list_projects`    | The projects the token can read: id, name, time zone, today there, conversion event, first and last event |
+| `overview`         | Visits, identified users, conversions and failed writes against the previous period; top pages and events |
+| `devices`          | Visits and conversions by device type, browser, system, country and region                                |
+| `acquisition`      | Visits per day and channel, and the sources and campaigns behind them                                     |
+| `engagement`       | Entry and exit pages, single-page visits, visit length                                                    |
+| `time_of_day`      | Visits by weekday and local hour                                                                          |
+| `features`         | The most used named events or screens, day by day                                                         |
+| `event_properties` | How the property values of one named event break down                                                     |
+| `requests`         | Calls to the site's backend per route: failures, statuses, durations, latest errors                       |
+| `funnel`           | How many visits or people reached each step, and the time between steps                                   |
+| `funnel_segments`  | The same funnel per device type or channel                                                                |
+| `funnel_subjects`  | The visits or people who reached, or dropped at, one step                                                 |
+| `visits`           | The visits of a range, filtered by pages, events, channel, device, country, campaign, failed requests     |
+| `visit_timeline`   | Every event of one visit, or every visit of one identified person                                         |
+| `project_settings` | Time zone, conversion event, allowed origins, retention, live public keys                                 |
+
+A result is JSON text, `{ "untrusted_visitor_text": "…", "report": … }`: the report is the API's
+answer, and the first field reminds the agent that names, paths and values inside it were written by
+the site's visitors. Problems come back as tool errors the agent can act on (a revoked token, an
+unknown project, the rate limit and when to retry).
 
 ## Configuration
 
@@ -55,8 +77,42 @@ One read-only tool per dashboard screen, each a thin call to the matching `GET` 
 | `PYXIS_TOKEN`   | yes      | A read-only access token (`pyxis_at_` and 32 letters and digits), created in the dashboard under Settings         |
 | `PYXIS_API_URL` | no       | The Pyxis API to read, as an origin. Defaults to `https://api.pyxis-analytics.dev`; plain http only for localhost |
 
-A missing or malformed value stops the server with a sentence that names the variable and never
-repeats its value.
+A missing or malformed value stops the server with a sentence on standard error that names the
+variable and never repeats its value.
+
+## Use it
+
+Create a token in the dashboard (Settings, Access tokens), then add the server to your client.
+Until the first release is on npm, build it from source and point the client at `dist/cli.js`:
+
+```bash
+git clone https://github.com/samuelcsantana/pyxis-mcp.git
+cd pyxis-mcp && npm ci && npm run build
+```
+
+Claude Code:
+
+```bash
+claude mcp add pyxis -e PYXIS_TOKEN=pyxis_at_… -- node /path/to/pyxis-mcp/dist/cli.js
+```
+
+Claude Desktop (`claude_desktop_config.json`) and Cursor (`.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "pyxis": {
+      "command": "node",
+      "args": ["/path/to/pyxis-mcp/dist/cli.js"],
+      "env": { "PYXIS_TOKEN": "pyxis_at_…" }
+    }
+  }
+}
+```
+
+Once it is on npm, `npx -y pyxis-mcp` replaces `node /path/to/pyxis-mcp/dist/cli.js`. A self-hosted
+Pyxis adds `PYXIS_API_URL`. Keep the token out of shared files and chats; revoke it in the dashboard
+the moment it leaks.
 
 ## Architecture
 
@@ -86,17 +142,34 @@ npm run lint && npm run typecheck && npm run test:cov && npm run build
 ## Testing
 
 - `npm run test:cov` runs the unit tests in Node and fails below **100%** of statements, branches,
-  functions and lines. Nothing is excluded from coverage besides the test files themselves.
-- `npm run test:tooling` tests the lint rule and the comment check.
-- CI runs the tests on Node 24 and again on Node 22, the oldest version the package supports.
+  functions and lines. The server is tested with a real MCP client over an in-memory transport and
+  a fake `fetch`.
+- One file is left out of the unit coverage: `src/cli.ts`, which only wires the modules to the
+  standard input and output. `npm run test:e2e` covers it: after `npm run build`, a real MCP client
+  starts `dist/cli.js`, lists the tools and calls them against a local fake of the API, checks that
+  standard output carries nothing but the protocol, and that a bad configuration stops the process
+  with the reason on standard error.
+- `src/contract.test.ts` checks the tools against `contract/openapi.json`, the API's own contract
+  (`npm run contract:sync` copies it from pyxis-api): every route a token may read has a tool, and
+  every tool sends only declared parameters, with values inside their enums.
+- `npm run test:tooling` tests the lint rule and the scripts.
+- CI runs the unit tests on Node 24 and again on Node 22, the oldest version the package supports.
 
 ## Project structure
 
 ```
-src/            configuration and, next, the server and its tools
-eslint-rules/   the local rule that forbids comments
-scripts/        the comment check for YAML, shell and config files
-docs/adr/       architecture decision records
+src/
+├── config.ts        reads PYXIS_TOKEN and PYXIS_API_URL
+├── pyxis-api.ts     one GET to the API, failures as sentences
+├── tools.ts         the fifteen tools: input schemas, routes, requests
+├── server.ts        registers the tools on the MCP server
+├── version.ts       the package version, for the server and the user agent
+└── cli.ts           the executable: stdio transport
+e2e/                 the built server driven by a real MCP client
+contract/            the API's OpenAPI contract, copied from pyxis-api
+eslint-rules/        the local rule that forbids comments
+scripts/             the comment check and the contract sync
+docs/adr/            architecture decision records
 ```
 
 ## Privacy and security
@@ -119,7 +192,7 @@ docs/adr/       architecture decision records
 ## Roadmap
 
 - [x] Repository skeleton, quality gates, configuration reader
-- [ ] Tools over the API's read routes, tested against its OpenAPI contract
+- [x] Tools over the API's read routes, tested against its OpenAPI contract
 - [ ] First release on npm, with provenance
 - [ ] Setup guides for Claude Code, Claude Desktop and Cursor
 
