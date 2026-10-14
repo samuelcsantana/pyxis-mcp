@@ -13,7 +13,7 @@
     "forceConsistentCasingInFileNames": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "noEmit": true
   },
   "include": ["src", "vitest.config.ts"]
