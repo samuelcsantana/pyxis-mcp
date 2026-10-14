@@ -9,6 +9,7 @@
 you can revoke at any time.**
 
 [![CI](https://github.com/samuelcsantana/pyxis-mcp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/samuelcsantana/pyxis-mcp/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/samuelcsantana/pyxis-mcp/graph/badge.svg)](https://codecov.io/gh/samuelcsantana/pyxis-mcp)
 [![CodeQL](https://github.com/samuelcsantana/pyxis-mcp/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/samuelcsantana/pyxis-mcp/actions/workflows/codeql.yml)
 <br>
 [![License: MIT](https://img.shields.io/github/license/samuelcsantana/pyxis-mcp)](LICENSE)
