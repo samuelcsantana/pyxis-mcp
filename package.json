@@ -1,0 +1,47 @@
+{
+  "name": "pyxis-mcp",
+  "version": "0.0.0",
+  "description": "MCP server for Pyxis, privacy-first product analytics: lets an AI agent read your dashboard's numbers with a read-only token.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "analytics",
+    "product-analytics",
+    "privacy",
+    "ai-agent"
+  ],
+  "homepage": "https://github.com/samuelcsantana/pyxis-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/samuelcsantana/pyxis-mcp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samuelcsantana/pyxis-mcp.git"
+  },
+  "license": "MIT",
+  "author": "Samuel Santana",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json && tsc -p scripts/tsconfig.json",
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:tooling": "node --test \"eslint-rules/**/*.test.mjs\" \"scripts/**/*.test.mts\"",
+    "lint": "eslint . --max-warnings 0 && node scripts/check-no-comments.mts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "~6.0.3"
+  }
+}
