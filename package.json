@@ -39,7 +39,8 @@
     "lint": "eslint . --max-warnings 0 && node scripts/check-no-comments.mts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "contract:sync": "node scripts/contract-sync.mts"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
@@ -47,6 +48,8 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.19.2",
     "@vitest/coverage-v8": "^5.0.4",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",

@@ -1,0 +1,32 @@
+name: Contract
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  HUSKY: 0
+
+jobs:
+  upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Fetch the contract from pyxis-api main
+        run: node scripts/contract-sync.mts
+      - name: Check the tools against it
+        run: npx vitest run src/contract.test.ts
+      - name: Point out a copy that needs syncing
+        run: |
+          if ! git diff --quiet contract/openapi.json; then
+            echo "::notice title=Contract::pyxis-api changed its contract; run npm run contract:sync in a pull request."
+          fi
