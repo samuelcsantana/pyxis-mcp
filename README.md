@@ -15,6 +15,8 @@ you can revoke at any time.**
 [![License: MIT](https://img.shields.io/github/license/samuelcsantana/pyxis-mcp)](LICENSE)
 [![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](tsconfig.json)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](https://www.conventionalcommits.org)
+[![npm](https://img.shields.io/npm/v/pyxis-mcp?logo=npm)](https://www.npmjs.com/package/pyxis-mcp)
+[![npm provenance](https://img.shields.io/badge/npm-provenance-2E7D32?logo=npm)](https://www.npmjs.com/package/pyxis-mcp#provenance)
 
 **[Pyxis](https://pyxis-analytics.dev)** · **[Live demo](https://demo.pyxis-analytics.dev)** ·
 **[API reference](https://samuelcsantana.github.io/pyxis-api/)**
