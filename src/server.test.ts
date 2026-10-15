@@ -10,6 +10,7 @@ import {
   UNEXPECTED_ANSWER,
 } from './server.js';
 import { PYXIS_TOOLS, VISITOR_TEXT_NOTE } from './tools.js';
+import { PACKAGE_VERSION } from './version.js';
 
 const TOKEN = `pyxis_at_${'Q'.repeat(32)}`;
 const PROJECT = '2b2b2b2b-0000-4000-8000-000000000002';
@@ -79,6 +80,18 @@ describe('createServer', () => {
     expect(tools.every((tool) => tool.annotations?.destructiveHint === false)).toBe(true);
     const overview = tools.find((tool) => tool.name === 'overview');
     expect(overview?.inputSchema.required).toEqual(['project_id', 'from', 'to']);
+  });
+
+  it("names itself with the package's version when given no options", async () => {
+    const { api } = fakeApi(() => json({}));
+    const server = createServer(api);
+    const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: 'test-client', version: '1.0.0' });
+    clients.push(client);
+
+    await Promise.all([server.connect(serverSide), client.connect(clientSide)]);
+
+    expect(client.getServerVersion()).toEqual({ name: SERVER_NAME, version: PACKAGE_VERSION });
   });
 
   it("answers list_projects with each project's today, wrapped with the visitor text warning", async () => {
