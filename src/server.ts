@@ -8,6 +8,7 @@ import {
   ToolInputError,
   VISITOR_TEXT_NOTE,
 } from './tools.js';
+import { PACKAGE_VERSION } from './version.js';
 
 export const SERVER_NAME = 'pyxis';
 
@@ -25,7 +26,7 @@ const READ_ONLY = {
 } as const;
 
 export interface ServerOptions {
-  readonly version: string;
+  readonly version?: string;
   readonly now?: () => Date;
 }
 
@@ -73,10 +74,10 @@ export async function runTool(
   return report === undefined ? failure(UNEXPECTED_ANSWER) : success(report);
 }
 
-export function createServer(api: PyxisApi, options: ServerOptions): McpServer {
+export function createServer(api: PyxisApi, options: ServerOptions = {}): McpServer {
   const now = options.now ?? (() => new Date());
   const server = new McpServer(
-    { name: SERVER_NAME, version: options.version },
+    { name: SERVER_NAME, version: options.version ?? PACKAGE_VERSION },
     { instructions: SERVER_INSTRUCTIONS },
   );
   for (const tool of PYXIS_TOOLS) {
