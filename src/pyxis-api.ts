@@ -4,10 +4,11 @@ import { userAgent } from './version.js';
 export const REQUEST_TIMEOUT_MS = 15_000;
 export const REQUESTS_PER_MINUTE = 60;
 
-const STATUS_BAD_REQUEST = 400;
 const STATUS_UNAUTHORIZED = 401;
 const STATUS_NOT_FOUND = 404;
 const STATUS_TOO_MANY_REQUESTS = 429;
+const FIRST_CLIENT_ERROR = 400;
+const FIRST_SERVER_ERROR = 500;
 const RETRY_AFTER_HEADER = 'retry-after';
 const JSON_MEDIA_TYPE = 'application/json';
 
@@ -99,6 +100,10 @@ function rateLimitedProblem(response: Response): string {
   return `Too many requests: each access token may make ${String(REQUESTS_PER_MINUTE)} requests a minute. Try again ${wait}.`;
 }
 
+function isRefusal(status: number): boolean {
+  return status >= FIRST_CLIENT_ERROR && status < FIRST_SERVER_ERROR;
+}
+
 async function problemOf(response: Response, texts: ProblemTexts): Promise<string> {
   switch (response.status) {
     case STATUS_UNAUTHORIZED:
@@ -107,10 +112,10 @@ async function problemOf(response: Response, texts: ProblemTexts): Promise<strin
       return PROBLEMS.notFound;
     case STATUS_TOO_MANY_REQUESTS:
       return rateLimitedProblem(response);
-    case STATUS_BAD_REQUEST:
-      return rejectedProblem(response);
     default:
-      return `The Pyxis API answered ${String(response.status)}. Try again later.`;
+      return isRefusal(response.status)
+        ? rejectedProblem(response)
+        : `The Pyxis API answered ${String(response.status)}. Try again later.`;
   }
 }
 

@@ -94,6 +94,7 @@ describe('PyxisApi', () => {
     [401, {}, LOCAL_PROBLEM_TEXTS.refusedToken],
     [404, {}, PROBLEMS.notFound],
     [503, {}, 'The Pyxis API answered 503. Try again later.'],
+    [302, {}, 'The Pyxis API answered 302. Try again later.'],
   ])('explains a %i', async (status, body, problem) => {
     const outcome = await apiWith(answering(json(status, body))).get('/x');
 
@@ -108,20 +109,27 @@ describe('PyxisApi', () => {
     expect(outcome).toEqual({ ok: false, problem: HOSTED_TEXTS.refusedToken });
   });
 
-  it('passes on the reason the API gives for refusing a request', async () => {
-    const fetch = answering(
-      json(400, { status_code: 400, error: 'invalid_request', message: 'to: must be a date.' }),
-    );
+  it.each([
+    [400, 'invalid_request', 'to: must be a date.'],
+    [
+      403,
+      'account_suspended',
+      'The account is suspended: its owner was told why by e-mail and can contest it.',
+    ],
+    [409, 'account_ended', 'The account has ended.'],
+  ])('passes on the reason the API gives for refusing with %i', async (status, error, message) => {
+    const fetch = answering(json(status, { status_code: status, error, message }));
 
     await expect(apiWith(fetch).get('/x')).resolves.toEqual({
       ok: false,
-      problem: 'The Pyxis API refused the request. invalid_request: to: must be a date.',
+      problem: `The Pyxis API refused the request. ${error}: ${message}`,
     });
   });
 
   it.each([
     ['without a reason', json(400, { status_code: 400 })],
     ['with a body that is not JSON', new Response('<html>', { status: 400 })],
+    ['with no body', new Response(null, { status: 403 })],
   ])('says the request was refused %s', async (_, response) => {
     await expect(apiWith(answering(response)).get('/x')).resolves.toEqual({
       ok: false,
