@@ -1,9 +1,22 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PROBLEMS, PyxisApi, REQUEST_TIMEOUT_MS, requestUrl, type Fetch } from './pyxis-api.js';
+import {
+  LOCAL_PROBLEM_TEXTS,
+  PROBLEMS,
+  PyxisApi,
+  REQUEST_TIMEOUT_MS,
+  requestUrl,
+  type Fetch,
+  type PyxisApiOptions,
+} from './pyxis-api.js';
+import { userAgent } from './version.js';
 
 const TOKEN = `pyxis_at_${'A'.repeat(32)}`;
 const CONFIG = { token: TOKEN, apiUrl: 'https://api.example.com' };
 const USER_AGENT = 'pyxis-mcp/1.2.3';
+const HOSTED_TEXTS = {
+  refusedToken: 'This connection was refused. Connect again.',
+  unreachableAdvice: 'Try again in a moment.',
+};
 
 function answering(response: Response): ReturnType<typeof vi.fn<Fetch>> {
   return vi.fn<Fetch>(() => Promise.resolve(response));
@@ -14,6 +27,10 @@ function json(status: number, body: unknown, headers: Record<string, string> = {
     status,
     headers: { 'content-type': 'application/json', ...headers },
   });
+}
+
+function apiWith(fetch: Fetch, options: Partial<PyxisApiOptions> = {}): PyxisApi {
+  return new PyxisApi({ ...CONFIG, userAgent: USER_AGENT, fetch, ...options });
 }
 
 describe('requestUrl', () => {
@@ -37,7 +54,7 @@ describe('PyxisApi', () => {
     const fetch = answering(json(200, { projects: [] }));
     const timeout = vi.spyOn(AbortSignal, 'timeout');
 
-    const outcome = await new PyxisApi(CONFIG, USER_AGENT, fetch).get('/v1/me');
+    const outcome = await apiWith(fetch).get('/v1/me');
 
     expect(outcome).toEqual({ ok: true, body: { projects: [] } });
     const [url, init] = fetch.mock.calls[0] ?? [];
@@ -50,26 +67,45 @@ describe('PyxisApi', () => {
     expect(timeout).toHaveBeenCalledWith(REQUEST_TIMEOUT_MS);
   });
 
-  it('uses the global fetch and the default timeout when given none', async () => {
+  it('waits as long as it is told to', async () => {
+    const timeout = vi.spyOn(AbortSignal, 'timeout');
+
+    await apiWith(answering(json(200, {})), { timeoutMs: 2_500 }).get('/v1/me');
+
+    expect(timeout).toHaveBeenCalledWith(2_500);
+  });
+
+  it("uses the global fetch, the package's user agent and the default timeout when given none", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(() => Promise.resolve(json(200, {})));
     vi.stubGlobal('fetch', fetch);
+    const timeout = vi.spyOn(AbortSignal, 'timeout');
 
-    await expect(new PyxisApi(CONFIG, USER_AGENT).get('/v1/me')).resolves.toEqual({
+    await expect(new PyxisApi(CONFIG).get('/v1/me')).resolves.toEqual({
       ok: true,
       body: {},
     });
     expect(fetch).toHaveBeenCalledOnce();
+    expect(fetch.mock.calls[0]?.[1]?.headers).toMatchObject({ 'user-agent': userAgent() });
+    expect(timeout).toHaveBeenCalledWith(REQUEST_TIMEOUT_MS);
     vi.unstubAllGlobals();
   });
 
   it.each([
-    [401, {}, PROBLEMS.refusedToken],
+    [401, {}, LOCAL_PROBLEM_TEXTS.refusedToken],
     [404, {}, PROBLEMS.notFound],
     [503, {}, 'The Pyxis API answered 503. Try again later.'],
   ])('explains a %i', async (status, body, problem) => {
-    const outcome = await new PyxisApi(CONFIG, USER_AGENT, answering(json(status, body))).get('/x');
+    const outcome = await apiWith(answering(json(status, body))).get('/x');
 
     expect(outcome).toEqual({ ok: false, problem });
+  });
+
+  it('tells a refused token in the words it was given', async () => {
+    const outcome = await apiWith(answering(json(401, {})), { problemTexts: HOSTED_TEXTS }).get(
+      '/x',
+    );
+
+    expect(outcome).toEqual({ ok: false, problem: HOSTED_TEXTS.refusedToken });
   });
 
   it('passes on the reason the API gives for refusing a request', async () => {
@@ -77,7 +113,7 @@ describe('PyxisApi', () => {
       json(400, { status_code: 400, error: 'invalid_request', message: 'to: must be a date.' }),
     );
 
-    await expect(new PyxisApi(CONFIG, USER_AGENT, fetch).get('/x')).resolves.toEqual({
+    await expect(apiWith(fetch).get('/x')).resolves.toEqual({
       ok: false,
       problem: 'The Pyxis API refused the request. invalid_request: to: must be a date.',
     });
@@ -87,7 +123,7 @@ describe('PyxisApi', () => {
     ['without a reason', json(400, { status_code: 400 })],
     ['with a body that is not JSON', new Response('<html>', { status: 400 })],
   ])('says the request was refused %s', async (_, response) => {
-    await expect(new PyxisApi(CONFIG, USER_AGENT, answering(response)).get('/x')).resolves.toEqual({
+    await expect(apiWith(answering(response)).get('/x')).resolves.toEqual({
       ok: false,
       problem: PROBLEMS.rejected,
     });
@@ -98,9 +134,7 @@ describe('PyxisApi', () => {
     [{}, 'Try again in a minute.'],
     [{ 'retry-after': 'soon' }, 'Try again in a minute.'],
   ])('says how long to wait after the rate limit (%j)', async (headers, wait) => {
-    const outcome = await new PyxisApi(CONFIG, USER_AGENT, answering(json(429, {}, headers))).get(
-      '/x',
-    );
+    const outcome = await apiWith(answering(json(429, {}, headers))).get('/x');
 
     expect(outcome).toEqual({
       ok: false,
@@ -115,7 +149,7 @@ describe('PyxisApi', () => {
   ])('reports %s without the token', async (_, failure, reason) => {
     const fetch = vi.fn<Fetch>(() => Promise.reject(failure));
 
-    const outcome = await new PyxisApi(CONFIG, USER_AGENT, fetch).get('/x');
+    const outcome = await apiWith(fetch).get('/x');
 
     expect(outcome).toEqual({
       ok: false,
@@ -124,10 +158,22 @@ describe('PyxisApi', () => {
     expect(JSON.stringify(outcome)).not.toContain(TOKEN);
   });
 
+  it('gives the advice it was given when the API does not answer', async () => {
+    const fetch = vi.fn<Fetch>(() => Promise.reject(new TypeError('fetch failed')));
+
+    const outcome = await apiWith(fetch, { problemTexts: HOSTED_TEXTS }).get('/x');
+
+    expect(outcome).toEqual({
+      ok: false,
+      problem:
+        'The Pyxis API at https://api.example.com did not answer (TypeError). Try again in a moment.',
+    });
+  });
+
   it('refuses a successful answer that is not JSON', async () => {
     const fetch = answering(new Response('<html>', { status: 200 }));
 
-    await expect(new PyxisApi(CONFIG, USER_AGENT, fetch).get('/x')).resolves.toEqual({
+    await expect(apiWith(fetch).get('/x')).resolves.toEqual({
       ok: false,
       problem: PROBLEMS.notJson,
     });

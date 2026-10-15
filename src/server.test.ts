@@ -33,7 +33,12 @@ type Route = (url: URL) => Response;
 
 function fakeApi(route: Route) {
   const fetch = vi.fn<Fetch>((url) => Promise.resolve(route(new URL(url))));
-  const api = new PyxisApi({ token: TOKEN, apiUrl: 'https://api.example.com' }, 'test', fetch);
+  const api = new PyxisApi({
+    token: TOKEN,
+    apiUrl: 'https://api.example.com',
+    userAgent: 'test',
+    fetch,
+  });
   return { api, fetch };
 }
 
