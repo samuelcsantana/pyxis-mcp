@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.2.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.1.0...v0.2.0) (2026-10-15)
+
+
+### Features
+
+* export the server, the HTTP handler and the API client ([147ea85](https://github.com/samuelcsantana/pyxis-mcp/commit/147ea8574c1027b626c0d78c8ea44e2e30e53916))
+* **http:** serve the tools over stateless streamable HTTP ([af2debd](https://github.com/samuelcsantana/pyxis-mcp/commit/af2debd9f64ed453e8ae99f86d1a4a61926c3698))
+* **server:** name the server with the package's version by default ([356fd40](https://github.com/samuelcsantana/pyxis-mcp/commit/356fd40e4675af77ca77a48c847369931226e2d7))
+
+
+### Bug Fixes
+
+* **api:** pass on the API's reason for every refusal ([1879717](https://github.com/samuelcsantana/pyxis-mcp/commit/1879717ab9b8e5321c9b9b6c90a4fbba84bb67f1))
+
+
+### Refactoring
+
+* **api:** take the client's options as one object ([7bc2c1b](https://github.com/samuelcsantana/pyxis-mcp/commit/7bc2c1b8c56e44166e5002dcecf755885eca0fa9))
+
+
+### Documentation
+
+* document the library and record ADR 0003 ([9901d40](https://github.com/samuelcsantana/pyxis-mcp/commit/9901d402f986cbed4c6ce38dd50944af105fc4d2))
+* **readme:** add the npm version and provenance badges ([ea5a644](https://github.com/samuelcsantana/pyxis-mcp/commit/ea5a644c3d6af04bb156b43934242e9be7714280))
+
 ## 0.1.0 (2026-10-14)
 
 
