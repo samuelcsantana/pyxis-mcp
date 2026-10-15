@@ -1,4 +1,5 @@
 import type { PyxisConfig } from './config.js';
+import { userAgent } from './version.js';
 
 export const REQUEST_TIMEOUT_MS = 15_000;
 export const REQUESTS_PER_MINUTE = 60;
@@ -18,9 +19,25 @@ export type ApiOutcome =
 
 export type Fetch = (url: string, init: RequestInit) => Promise<Response>;
 
-export const PROBLEMS = {
+export interface ProblemTexts {
+  readonly refusedToken: string;
+  readonly unreachableAdvice: string;
+}
+
+export const LOCAL_PROBLEM_TEXTS: ProblemTexts = {
   refusedToken:
     'PYXIS_TOKEN was refused: it may be revoked or expired. Create a new access token in the Pyxis dashboard, under Settings, Access tokens.',
+  unreachableAdvice: 'Check PYXIS_API_URL and the network, then try again.',
+};
+
+export interface PyxisApiOptions extends PyxisConfig {
+  readonly userAgent?: string;
+  readonly fetch?: Fetch;
+  readonly timeoutMs?: number;
+  readonly problemTexts?: ProblemTexts;
+}
+
+export const PROBLEMS = {
   notFound:
     'Not found: no project with this id among the projects this token can read. Call list_projects for the ids.',
   rejected: 'The Pyxis API refused the request.',
@@ -82,10 +99,10 @@ function rateLimitedProblem(response: Response): string {
   return `Too many requests: each access token may make ${String(REQUESTS_PER_MINUTE)} requests a minute. Try again ${wait}.`;
 }
 
-async function problemOf(response: Response): Promise<string> {
+async function problemOf(response: Response, texts: ProblemTexts): Promise<string> {
   switch (response.status) {
     case STATUS_UNAUTHORIZED:
-      return PROBLEMS.refusedToken;
+      return texts.refusedToken;
     case STATUS_NOT_FOUND:
       return PROBLEMS.notFound;
     case STATUS_TOO_MANY_REQUESTS:
@@ -98,19 +115,28 @@ async function problemOf(response: Response): Promise<string> {
 }
 
 export class PyxisApi {
-  constructor(
-    private readonly config: PyxisConfig,
-    private readonly userAgent: string,
-    private readonly fetch: Fetch = globalThis.fetch,
-    private readonly timeoutMs: number = REQUEST_TIMEOUT_MS,
-  ) {}
+  private readonly token: string;
+  private readonly apiUrl: string;
+  private readonly userAgent: string;
+  private readonly fetch: Fetch;
+  private readonly timeoutMs: number;
+  private readonly problemTexts: ProblemTexts;
+
+  constructor(options: PyxisApiOptions) {
+    this.token = options.token;
+    this.apiUrl = options.apiUrl;
+    this.userAgent = options.userAgent ?? userAgent();
+    this.fetch = options.fetch ?? globalThis.fetch;
+    this.timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS;
+    this.problemTexts = options.problemTexts ?? LOCAL_PROBLEM_TEXTS;
+  }
 
   async get(path: string, query: Query = {}): Promise<ApiOutcome> {
     let response: Response;
     try {
-      response = await this.fetch(requestUrl(this.config.apiUrl, path, query), {
+      response = await this.fetch(requestUrl(this.apiUrl, path, query), {
         headers: {
-          authorization: `Bearer ${this.config.token}`,
+          authorization: `Bearer ${this.token}`,
           accept: JSON_MEDIA_TYPE,
           'user-agent': this.userAgent,
         },
@@ -120,11 +146,11 @@ export class PyxisApi {
       const reason = error instanceof Error ? error.name : 'Error';
       return {
         ok: false,
-        problem: `The Pyxis API at ${this.config.apiUrl} did not answer (${reason}). Check PYXIS_API_URL and the network, then try again.`,
+        problem: `The Pyxis API at ${this.apiUrl} did not answer (${reason}). ${this.problemTexts.unreachableAdvice}`,
       };
     }
     if (!response.ok) {
-      return { ok: false, problem: await problemOf(response) };
+      return { ok: false, problem: await problemOf(response, this.problemTexts) };
     }
     const body = await readJson(response);
     return body === undefined ? { ok: false, problem: PROBLEMS.notJson } : { ok: true, body };

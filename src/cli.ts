@@ -3,13 +3,14 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ConfigError, readConfig } from './config.js';
 import { PyxisApi } from './pyxis-api.js';
 import { createServer } from './server.js';
-import { PACKAGE_VERSION, userAgent } from './version.js';
+import { PACKAGE_VERSION } from './version.js';
 
 const EXIT_FAILURE = 1;
 
 async function start(): Promise<void> {
-  const config = readConfig(process.env);
-  const server = createServer(new PyxisApi(config, userAgent()), { version: PACKAGE_VERSION });
+  const server = createServer(new PyxisApi(readConfig(process.env)), {
+    version: PACKAGE_VERSION,
+  });
   await server.connect(new StdioServerTransport());
 }
 
