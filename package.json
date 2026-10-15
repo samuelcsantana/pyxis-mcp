@@ -1,7 +1,7 @@
 {
   "name": "pyxis-mcp",
   "version": "0.1.0",
-  "description": "MCP server for Pyxis, privacy-first product analytics: lets an AI agent read your dashboard's numbers with a read-only token.",
+  "description": "MCP server for Pyxis, privacy-first product analytics: lets an AI agent read your dashboard's numbers with a read-only token, locally over stdio or hosted over HTTP.",
   "keywords": [
     "mcp",
     "model-context-protocol",
@@ -21,6 +21,15 @@
   "license": "MIT",
   "author": "Samuel Santana",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "engines": {
     "node": ">=22"
   },
