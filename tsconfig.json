@@ -14,7 +14,8 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": { "pyxis-mcp": ["./src/index.ts"] }
   },
   "include": ["src", "e2e", "vitest.config.ts", "vitest.e2e.config.ts"]
 }
