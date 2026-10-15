@@ -24,7 +24,8 @@ you can revoke at any time.**
 </div>
 
 > **Status:** on npm as `pyxis-mcp`, every release published from GitHub Actions with
-> provenance. The fifteen tools read the live Pyxis API.
+> provenance. The fifteen tools read the live Pyxis API. The package also exports them as a
+> library, which a host serves over HTTP with each caller's token.
 
 ## Ecosystem
 
@@ -111,17 +112,65 @@ A self-hosted Pyxis adds `PYXIS_API_URL`. To run it from source instead, `npm ci
 in a clone and use `node /path/to/pyxis-mcp/dist/cli.js` as the command. Keep the token out of
 shared files and chats; revoke it in the dashboard the moment it leaks.
 
+## Use it as a library
+
+Clients that only accept remote servers need the tools at a URL. The package exports them so a
+host can serve them from its own endpoint, over Streamable HTTP, with the token of whoever is
+calling. It is an ES module that a CommonJS host can also `require()` (Node 22.12 or later).
+
+```ts
+import { handleHttpRequest, PyxisApi } from 'pyxis-mcp';
+
+export function answerMcp(request: Request, callerToken: string): Promise<Response> {
+  const api = new PyxisApi({
+    token: callerToken,
+    apiUrl: 'https://api.pyxis-analytics.dev',
+    problemTexts: {
+      refusedToken: 'Pyxis refused this connection: connect Pyxis again in your MCP client.',
+      unreachableAdvice: 'Try again in a moment.',
+    },
+  });
+  return handleHttpRequest(request, api);
+}
+```
+
+| Export                                      | What it does                                                          |
+| ------------------------------------------- | --------------------------------------------------------------------- |
+| `handleHttpRequest(request, api, options?)` | Answers one MCP exchange: a web `Request` in, a web `Response` out    |
+| `createServer(api, options?)`               | The MCP server with the fifteen tools, for a transport of your choice |
+| `new PyxisApi(options)`                     | The client the tools read through, one per caller                     |
+
+`PyxisApi` options: `token` and `apiUrl` (required); `userAgent` (default `pyxis-mcp/<version>`);
+`fetch` (default the global one; a host can pass one that answers inside its own process);
+`timeoutMs` (default 15 seconds); `problemTexts`, the two sentences that depend on where the server
+runs: `refusedToken` and `unreachableAdvice` (default: the local server's, which name
+`PYXIS_TOKEN` and `PYXIS_API_URL`). `createServer` takes `version` (default the package's) and
+`now` (the clock); `handleHttpRequest` takes those and `allowedOrigins`.
+
+What the handler does: each request gets a server and a transport of its own, closed once it is
+answered, so there is no session id and no event stream, only JSON answers. It answers `405` with
+`Allow: POST` to any other method, `403` to a request with an `Origin` header unless that origin is
+in `allowedOrigins` (none by default: MCP clients do not call from web pages), and `413` to a body
+over 64 KiB. What it leaves to the host: authenticating the caller (and the `401` with
+`WWW-Authenticate` that starts a client's sign-in), rate limits and the host name
+([ADR 0003](docs/adr/0003-stateless-http-handler-for-hosts.md)).
+
 ## Architecture
 
 ```mermaid
 flowchart LR
   Agent["MCP client<br>(Claude Code, Cursor…)"] -- "stdio, JSON-RPC" --> Server["pyxis-mcp<br>(on the user's machine)"]
   Server -- "HTTPS GET<br>Authorization: Bearer pyxis_at_…" --> API["Pyxis API"]
+  Remote["Remote MCP client"] -- "Streamable HTTP POST<br>with the caller's token" --> Host["A host's endpoint<br>handleHttpRequest"]
+  Host -- "GET with the same token" --> API
   API --> DB[("Events")]
 ```
 
-The server opens no port and keeps no state. The API decides what the token may read, exactly as
-it does for a dashboard session ([ADR 0002](docs/adr/0002-local-read-only-server.md)).
+The local server opens no port and keeps no state. The API decides what the token may read,
+exactly as it does for a dashboard session ([ADR 0002](docs/adr/0002-local-read-only-server.md)).
+A host runs the same tools for remote clients: it authenticates the caller, and the tools read with
+that caller's token, so the token never leaves the server that issued it
+([ADR 0003](docs/adr/0003-stateless-http-handler-for-hosts.md)).
 
 ## Tech stack
 
@@ -140,12 +189,17 @@ npm run lint && npm run typecheck && npm run test:cov && npm run build
 
 - `npm run test:cov` runs the unit tests in Node and fails below **100%** of statements, branches,
   functions and lines. The server is tested with a real MCP client over an in-memory transport and
-  a fake `fetch`.
+  a fake `fetch`; the HTTP handler with web `Request` objects, from `initialize` to a tool call,
+  and every refusal.
 - One file is left out of the unit coverage: `src/cli.ts`, which only wires the modules to the
   standard input and output. `npm run test:e2e` covers it: after `npm run build`, a real MCP client
   starts `dist/cli.js`, lists the tools and calls them against a local fake of the API, checks that
   standard output carries nothing but the protocol, and that a bad configuration stops the process
   with the reason on standard error.
+- `npm run test:e2e` also starts `e2e/http-host.ts`, a small HTTP host that imports `pyxis-mcp` by
+  its name, and drives it with the SDK's Streamable HTTP client: tools against the fake API with
+  the caller's token, no session, the host's own words for a refused token, `405` and `403`. The
+  package is also loaded by name with `import` and with `require`.
 - `src/contract.test.ts` checks the tools against `contract/openapi.json`, the API's own contract
   (`npm run contract:sync` copies it from pyxis-api): every route a token may read has a tool, and
   every tool sends only declared parameters, with values inside their enums.
@@ -160,9 +214,11 @@ src/
 ├── pyxis-api.ts     one GET to the API, failures as sentences
 ├── tools.ts         the fifteen tools: input schemas, routes, requests
 ├── server.ts        registers the tools on the MCP server
+├── http.ts          one stateless Streamable HTTP exchange
+├── index.ts         the library's public exports
 ├── version.ts       the package version, for the server and the user agent
 └── cli.ts           the executable: stdio transport
-e2e/                 the built server driven by a real MCP client
+e2e/                 the built package driven by real MCP clients, over stdio and over HTTP
 contract/            the API's OpenAPI contract, copied from pyxis-api
 eslint-rules/        the local rule that forbids comments
 scripts/             the comment check and the contract sync
@@ -177,20 +233,25 @@ docs/adr/            architecture decision records
   http only to localhost), and never reaches a log, an error message or a tool result.
 - Text written by a site's visitors is returned as data, and each tool description says it is not
   an instruction.
+- Over HTTP, the handler keeps no session, refuses requests sent by web pages and bodies over 64
+  KiB, and reads with the token of the caller its host authenticated.
 - Vulnerabilities: see [SECURITY.md](SECURITY.md).
 
 ## Architecture decisions
 
-| ADR                                                    | Decision                                                     |
-| ------------------------------------------------------ | ------------------------------------------------------------ |
-| [0001](docs/adr/0001-record-architecture-decisions.md) | Record architecture decisions                                |
-| [0002](docs/adr/0002-local-read-only-server.md)        | A local, read-only server that uses the admin's access token |
+| ADR                                                       | Decision                                                          |
+| --------------------------------------------------------- | ----------------------------------------------------------------- |
+| [0001](docs/adr/0001-record-architecture-decisions.md)    | Record architecture decisions                                     |
+| [0002](docs/adr/0002-local-read-only-server.md)           | A local, read-only server that uses the admin's access token      |
+| [0003](docs/adr/0003-stateless-http-handler-for-hosts.md) | A stateless HTTP handler that a host runs with the caller's token |
 
 ## Roadmap
 
 - [x] Repository skeleton, quality gates, configuration reader
 - [x] Tools over the API's read routes, tested against its OpenAPI contract
 - [x] First release on npm, with provenance
+- [x] The tools as a library, served over stateless Streamable HTTP by a host
+- [ ] A remote endpoint in the Pyxis API, signed in with OAuth, for clients that only take URLs
 - [ ] Setup guides for Claude Code, Claude Desktop and Cursor
 
 ## Contributing and license
