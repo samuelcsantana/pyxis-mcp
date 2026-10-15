@@ -71,7 +71,9 @@ project's time zone; `list_projects` gives each project's today, so call it firs
 A result is JSON text, `{ "untrusted_visitor_text": "…", "report": … }`: the report is the API's
 answer, and the first field reminds the agent that names, paths and values inside it were written by
 the site's visitors. Problems come back as tool errors the agent can act on (a revoked token, an
-unknown project, the rate limit and when to retry).
+unknown project, the rate limit and when to retry). When the API refuses a request (any `4xx`), the
+error carries the API's own code and reason, such as a suspended account; only a `5xx` asks to try
+again later.
 
 ## Configuration
 
