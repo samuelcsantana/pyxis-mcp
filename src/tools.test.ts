@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import {
   LOCAL_TIMES_NOTE,
   PYXIS_TOOLS,
@@ -429,6 +430,15 @@ describe('visits', () => {
       failed: true,
       cursor: 'next-page',
     });
+  });
+
+  it('names the sources acquisition gives a visit that came with none', () => {
+    const filter = tool('visits').inputSchema.source;
+    const source = filter === undefined ? undefined : z.globalRegistry.get(filter)?.description;
+
+    expect(source).toContain('(ad click)');
+    expect(source).toContain('(direct)');
+    expect(tool('acquisition').description).toContain('(ad click)');
   });
 
   it('asks for the event a property filter belongs to', () => {

@@ -208,7 +208,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     'acquisition',
     'Acquisition',
     'acquisition',
-    'Visits per day and channel (paid, email, social, campaign, organic, referral, direct), and the sources and campaigns that brought them, with their conversions and ad clicks.',
+    'Visits per day and channel (paid, email, social, campaign, organic, referral, direct), and the sources and campaigns that brought them, with their conversions and ad clicks. A source is the campaign source, else the referring host; a visit with neither is (ad click) when it came from an ad click, such as one opened by an app that sends no referrer, and (direct) otherwise.',
   ),
   rangeTool(
     'engagement',
@@ -379,7 +379,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
         .max(MAX_SOURCE_LENGTH)
         .optional()
         .describe(
-          'The source as acquisition names it: campaign source, referring host or (direct).',
+          'The source as acquisition names it: campaign source, referring host, (ad click) or (direct).',
         ),
       campaign: z.string().min(1).max(MAX_CAMPAIGN_LENGTH).optional().describe('The utm_campaign.'),
       route: route.optional().describe('A request the visit made: POST /orders/:id.'),
