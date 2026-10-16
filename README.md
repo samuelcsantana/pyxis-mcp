@@ -74,7 +74,9 @@ dashboard; with a project that has received no event, the site does not run the 
 
 A result is JSON text, `{ "untrusted_visitor_text": "…", "report": … }`: the report is the API's
 answer, and the first field reminds the agent that names, paths and values inside it were written by
-the site's visitors. Problems come back as tool errors the agent can act on (a revoked token, an
+the site's visitors. Times come in the project's time zone, with the offset of each moment
+(`2026-10-13T22:41:41.638-03:00`), where the API answers in UTC; the timeline's `before` takes any
+offset ([ADR 0004](docs/adr/0004-times-in-the-project-time-zone.md)). Problems come back as tool errors the agent can act on (a revoked token, an
 unknown project, the rate limit and when to retry). When the API refuses a request (any `4xx`), the
 error carries the API's own code and reason, such as a suspended account; only a `5xx` asks to try
 again later.
@@ -240,11 +242,14 @@ npm run lint && npm run typecheck && npm run test:cov && npm run build
   with the reason on standard error.
 - `npm run test:e2e` also starts `e2e/http-host.ts`, a small HTTP host that imports `pyxis-mcp` by
   its name, and drives it with the SDK's Streamable HTTP client: tools against the fake API with
-  the caller's token, no session, the host's own words for a refused token, `405` and `403`. The
+  the caller's token, no session, a timeline page in local time whose cursor reaches the API in
+  UTC, the host's own words for a refused token, `405` and `403`. The
   package is also loaded by name with `import` and with `require`.
 - `src/contract.test.ts` checks the tools against `contract/openapi.json`, the API's own contract
-  (`npm run contract:sync` copies it from pyxis-api): every route a token may read has a tool, and
-  every tool sends only declared parameters, with values inside their enums.
+  (`npm run contract:sync` copies it from pyxis-api): every route a token may read has a tool,
+  every tool sends only declared parameters, with values inside their enums, and every instant an
+  answer declares is one its tool writes in the project time zone, read from the answer's
+  `timezone`.
 - `npm run test:tooling` tests the lint rule and the scripts.
 - CI runs the unit tests on Node 24 and again on Node 22, the oldest version the package supports.
 
@@ -255,6 +260,7 @@ src/
 ├── config.ts        reads PYXIS_TOKEN and PYXIS_API_URL
 ├── pyxis-api.ts     one GET to the API, failures as sentences
 ├── tools.ts         the fifteen tools: input schemas, routes, requests
+├── time-zone.ts     writes the instants of an answer in the project time zone
 ├── server.ts        registers the tools on the MCP server
 ├── http.ts          one stateless Streamable HTTP exchange
 ├── index.ts         the library's public exports
@@ -286,6 +292,7 @@ docs/adr/            architecture decision records
 | [0001](docs/adr/0001-record-architecture-decisions.md)    | Record architecture decisions                                     |
 | [0002](docs/adr/0002-local-read-only-server.md)           | A local, read-only server that uses the admin's access token      |
 | [0003](docs/adr/0003-stateless-http-handler-for-hosts.md) | A stateless HTTP handler that a host runs with the caller's token |
+| [0004](docs/adr/0004-times-in-the-project-time-zone.md)   | Times in the project time zone, rewritten in place                |
 
 ## Roadmap
 
