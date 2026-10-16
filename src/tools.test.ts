@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  LOCAL_TIMES_NOTE,
   PYXIS_TOOLS,
   type PyxisTool,
   ToolInputError,
@@ -15,6 +16,9 @@ const STEPS = [
   { type: 'event', name: 'signup_completed' },
 ];
 const NOW = new Date('2026-10-15T01:30:00.000Z');
+const SAO_PAULO = 'America/Sao_Paulo';
+const INSTANT = '2026-10-14T01:41:41.638Z';
+const LOCAL_INSTANT = '2026-10-13T22:41:41.638-03:00';
 
 function tool(name: string): PyxisTool {
   const found = PYXIS_TOOLS.find((candidate) => candidate.name === name);
@@ -66,6 +70,21 @@ describe('PYXIS_TOOLS', () => {
       true,
     );
   });
+
+  it('says in the description of every tool that answers with times how they are written', () => {
+    expect(
+      PYXIS_TOOLS.filter((candidate) => candidate.description.includes(LOCAL_TIMES_NOTE)).map(
+        (candidate) => candidate.name,
+      ),
+    ).toEqual([
+      'list_projects',
+      'requests',
+      'funnel_subjects',
+      'visits',
+      'visit_timeline',
+      'project_settings',
+    ]);
+  });
 });
 
 describe('list_projects', () => {
@@ -73,7 +92,7 @@ describe('list_projects', () => {
     expect(tool('list_projects').request({})).toEqual({ path: '/v1/me', query: {} });
   });
 
-  it("keeps what an agent needs and adds each project's today in its own time zone", () => {
+  it("keeps what an agent needs, in each project's own time zone, and adds its today there", () => {
     const body = {
       email: 'owner@example.com',
       projects: [
@@ -106,8 +125,8 @@ describe('list_projects', () => {
           timezone: 'America/Sao_Paulo',
           today: '2026-10-14',
           conversion_event: 'signup_completed',
-          first_event_at: '2026-09-01T10:00:00.000Z',
-          last_event_at: '2026-10-15T01:00:00.000Z',
+          first_event_at: '2026-09-01T07:00:00.000-03:00',
+          last_event_at: '2026-10-14T22:00:00.000-03:00',
         },
         {
           id: VISIT,
@@ -124,6 +143,118 @@ describe('list_projects', () => {
 
   it('answers nothing for a body it does not recognize', () => {
     expect(tool('list_projects').report({ projects: 'none' }, NOW)).toBeUndefined();
+  });
+});
+
+describe('the answers that carry times', () => {
+  it.each([
+    [
+      'requests',
+      {
+        timezone: SAO_PAULO,
+        kind: 'writes',
+        routes: [
+          { route: 'POST /orders', recent_failures: [{ status: 500, occurred_at: INSTANT }] },
+        ],
+      },
+      {
+        timezone: SAO_PAULO,
+        kind: 'writes',
+        routes: [
+          { route: 'POST /orders', recent_failures: [{ status: 500, occurred_at: LOCAL_INSTANT }] },
+        ],
+      },
+    ],
+    [
+      'funnel_subjects',
+      {
+        timezone: SAO_PAULO,
+        next_cursor: `${INSTANT}~${VISIT}`,
+        subjects: [{ id: VISIT, last_step_at: INSTANT }],
+      },
+      {
+        timezone: SAO_PAULO,
+        next_cursor: `${INSTANT}~${VISIT}`,
+        subjects: [{ id: VISIT, last_step_at: LOCAL_INSTANT }],
+      },
+    ],
+    [
+      'visits',
+      {
+        timezone: SAO_PAULO,
+        total: 1,
+        next_cursor: null,
+        visits: [{ id: VISIT, started_at: INSTANT, ended_at: '2026-10-14T01:45:00.000Z' }],
+      },
+      {
+        timezone: SAO_PAULO,
+        total: 1,
+        next_cursor: null,
+        visits: [
+          { id: VISIT, started_at: LOCAL_INSTANT, ended_at: '2026-10-13T22:45:00.000-03:00' },
+        ],
+      },
+    ],
+    [
+      'visit_timeline',
+      {
+        timezone: SAO_PAULO,
+        next_before: INSTANT,
+        visits: [
+          {
+            started_at: INSTANT,
+            ended_at: INSTANT,
+            events: [
+              { name: 'signup_completed', occurred_at: INSTANT, properties: { at: INSTANT } },
+            ],
+          },
+        ],
+      },
+      {
+        timezone: SAO_PAULO,
+        next_before: LOCAL_INSTANT,
+        visits: [
+          {
+            started_at: LOCAL_INSTANT,
+            ended_at: LOCAL_INSTANT,
+            events: [
+              { name: 'signup_completed', occurred_at: LOCAL_INSTANT, properties: { at: INSTANT } },
+            ],
+          },
+        ],
+      },
+    ],
+    [
+      'project_settings',
+      {
+        timezone: SAO_PAULO,
+        created_at: INSTANT,
+        first_event_at: INSTANT,
+        last_event_at: INSTANT,
+        ingestion_suspended_at: null,
+        deletion_held_at: INSTANT,
+        public_keys: [{ key: 'pyxis_pk_example', created_at: INSTANT }],
+        secret_keys: [{ id: VISIT, created_at: INSTANT }],
+      },
+      {
+        timezone: SAO_PAULO,
+        created_at: LOCAL_INSTANT,
+        first_event_at: LOCAL_INSTANT,
+        last_event_at: LOCAL_INSTANT,
+        ingestion_suspended_at: null,
+        deletion_held_at: LOCAL_INSTANT,
+        public_keys: [{ key: 'pyxis_pk_example', created_at: LOCAL_INSTANT }],
+        secret_keys: [{ id: VISIT, created_at: LOCAL_INSTANT }],
+      },
+    ],
+  ])('%s writes its times in the project time zone and leaves the rest', (name, body, local) => {
+    expect(tool(name).report(body, NOW)).toEqual(local);
+  });
+
+  it('passes an answer that names no time zone, from an older API, as it came', () => {
+    const body = { next_before: INSTANT, visits: [{ started_at: INSTANT }] };
+
+    expect(tool('visit_timeline').report(body, NOW)).toBe(body);
   });
 });
 

@@ -216,6 +216,7 @@ describe('runTool', () => {
       description: 'A tool whose request fails unexpectedly.',
       inputSchema: {},
       route: '/v1/me',
+      instants: [],
       request: () => {
         throw new RangeError('broken tool');
       },
