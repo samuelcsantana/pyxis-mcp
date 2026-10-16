@@ -4,6 +4,20 @@ import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
 export const TOKEN = `pyxis_at_${'E'.repeat(32)}`;
 export const PROJECT = '2b2b2b2b-0000-4000-8000-000000000002';
+export const VISIT = '5d2f8c1a-6b3e-4a7f-9c0d-1e2f3a4b5c6d';
+export const TIMELINE = {
+  timezone: 'America/Sao_Paulo',
+  next_before: '2026-10-14T01:41:41.638Z',
+  visits: [
+    {
+      id: VISIT,
+      user_id: null,
+      started_at: '2026-10-14T01:41:41.638Z',
+      ended_at: '2026-10-14T01:50:00.000Z',
+      events: [{ name: 'page_view', path: '/pricing', occurred_at: '2026-10-14T01:41:41.638Z' }],
+    },
+  ],
+};
 export const ME = {
   email: 'owner@example.com',
   projects: [
@@ -51,6 +65,10 @@ function answer(seen: SeenRequest[], request: IncomingMessage, response: ServerR
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/overview?`) === true) {
     send(200, { visits: { current: 12, previous: 9 } });
+    return;
+  }
+  if (request.url?.startsWith(`/v1/projects/${PROJECT}/timeline?`) === true) {
+    send(200, TIMELINE);
     return;
   }
   send(404, { status_code: 404, error: 'not_found', message: 'Not found.' });

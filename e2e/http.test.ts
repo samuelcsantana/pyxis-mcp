@@ -4,7 +4,16 @@ import type { Readable } from 'node:stream';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { environment, PROJECT, startFakeApi, textOf, TOKEN, type FakeApi } from './support.js';
+import {
+  environment,
+  PROJECT,
+  startFakeApi,
+  textOf,
+  TIMELINE,
+  TOKEN,
+  VISIT,
+  type FakeApi,
+} from './support.js';
 
 const HOST = path.join(process.cwd(), 'e2e', 'http-host.ts');
 const LISTENING = /listening (\d+)/;
@@ -107,6 +116,40 @@ describe('pyxis-mcp as a library behind an HTTP host', () => {
     expect(api.seen.every((request) => request.authorization === `Bearer ${TOKEN}`)).toBe(true);
     expect(transport.sessionId).toBeUndefined();
     expect(errors).toEqual([]);
+  });
+
+  it('shows times in the project time zone and reads the next page from the cursor it gave', async () => {
+    const { client } = await connect(TOKEN);
+
+    const first = await client.callTool({
+      name: 'visit_timeline',
+      arguments: { project_id: PROJECT, session_id: VISIT },
+    });
+    const { report } = JSON.parse(textOf(first)) as { report: { next_before: string } };
+    await client.callTool({
+      name: 'visit_timeline',
+      arguments: { project_id: PROJECT, session_id: VISIT, before: report.next_before },
+    });
+
+    expect(report).toEqual({
+      timezone: 'America/Sao_Paulo',
+      next_before: '2026-10-13T22:41:41.638-03:00',
+      visits: [
+        {
+          id: VISIT,
+          user_id: null,
+          started_at: '2026-10-13T22:41:41.638-03:00',
+          ended_at: '2026-10-13T22:50:00.000-03:00',
+          events: [
+            { name: 'page_view', path: '/pricing', occurred_at: '2026-10-13T22:41:41.638-03:00' },
+          ],
+        },
+      ],
+    });
+    expect(api.seen.map((request) => request.url)).toEqual([
+      `/v1/projects/${PROJECT}/timeline?session_id=${VISIT}`,
+      `/v1/projects/${PROJECT}/timeline?session_id=${VISIT}&before=${encodeURIComponent(TIMELINE.next_before)}`,
+    ]);
   });
 
   it('answers a token the API refuses as a tool error in the words the host chose', async () => {
