@@ -331,6 +331,16 @@ describe('visit_timeline', () => {
     ).toEqual({ session_id: undefined, user_id: 'user-42', before: '2026-10-12T10:00:00.000Z' });
   });
 
+  it('sends a cursor written with an offset as the same instant in UTC, the only form the API reads', () => {
+    expect(
+      tool('visit_timeline').request({
+        project_id: PROJECT,
+        session_id: VISIT,
+        before: '2026-10-13T22:41:41.638-03:00',
+      }).query,
+    ).toEqual({ session_id: VISIT, user_id: undefined, before: '2026-10-14T01:41:41.638Z' });
+  });
+
   it.each([
     [{ project_id: PROJECT }],
     [{ project_id: PROJECT, session_id: VISIT, user_id: 'user-42' }],
