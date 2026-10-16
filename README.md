@@ -5,8 +5,8 @@
   <img alt="Pyxis — privacy-first product analytics" src="https://raw.githubusercontent.com/samuelcsantana/pyxis-mcp/main/.github/assets/cover-light.png" width="100%">
 </picture>
 
-**The MCP server of Pyxis: lets an AI agent read your dashboard's numbers, with a read-only token
-you can revoke at any time.**
+**The MCP server of Pyxis: lets Claude and other AI agents read your dashboard's numbers, only
+reading, through a connection or a token you can revoke at any time.**
 
 [![CI](https://github.com/samuelcsantana/pyxis-mcp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/samuelcsantana/pyxis-mcp/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/samuelcsantana/pyxis-mcp/graph/badge.svg)](https://codecov.io/gh/samuelcsantana/pyxis-mcp)
@@ -25,7 +25,8 @@ you can revoke at any time.**
 
 > **Status:** on npm as `pyxis-mcp`, every release published from GitHub Actions with
 > provenance. The fifteen tools read the live Pyxis API. The package also exports them as a
-> library, which a host serves over HTTP with each caller's token.
+> library, and the Pyxis API serves them at `https://api.pyxis-analytics.dev/mcp`, the remote
+> connector that Claude and Claude Code sign in to with OAuth.
 
 ## Ecosystem
 
@@ -75,6 +76,40 @@ unknown project, the rate limit and when to retry). When the API refuses a reque
 error carries the API's own code and reason, such as a suspended account; only a `5xx` asks to try
 again later.
 
+## Connect from Claude
+
+The hosted Pyxis serves these tools at **`https://api.pyxis-analytics.dev/mcp`**. Claude connects
+to it with no token and nothing to install: you sign in to Pyxis once and allow the connection.
+
+**Claude** (on the web, the desktop app and the phone):
+
+1. In Claude, open Settings, then Connectors, and choose **Add custom connector**. In some versions
+   the menu is Customize, then Connectors.
+2. Name it `Pyxis` and paste `https://api.pyxis-analytics.dev/mcp`. Leave the advanced OAuth fields
+   empty.
+3. Choose **Connect**. A Pyxis page opens: sign in with the code sent to your e-mail, check the
+   app, where its data goes and your projects, and choose **Allow**.
+
+**Claude Code:**
+
+```bash
+claude mcp add --transport http pyxis https://api.pyxis-analytics.dev/mcp
+```
+
+Then run `/mcp` in Claude Code, pick `pyxis` and choose **Authenticate**: the same Pyxis page
+opens in the browser.
+
+A connection only reads the numbers you see in the dashboard, from every project you can open. It
+renews itself while it is used (each access token lasts an hour) and ends when you revoke it in the
+dashboard, under Settings, Connected apps, or after 90 days without use; you keep up to ten. The
+data Claude asks for goes from the Pyxis API to Anthropic, which handles it under its own terms.
+Only Claude and Claude Code connect this way. A client that sends a header reaches the same address
+with an access token instead:
+
+```bash
+claude mcp add --transport http pyxis https://api.pyxis-analytics.dev/mcp --header "Authorization: Bearer pyxis_at_…"
+```
+
 ## Configuration
 
 | Variable        | Required | Meaning                                                                                                           |
@@ -85,10 +120,11 @@ again later.
 A missing or malformed value stops the server with a sentence on standard error that names the
 variable and never repeats its value.
 
-## Use it
+## Run it on your computer
 
-Create a token in the dashboard (Settings, Access tokens), then add the server to your client. It
-runs with `npx`, so there is nothing to install beforehand (Node 22 or later).
+To run the tools on your own computer, or against a self-hosted Pyxis, create a token in the
+dashboard (Settings, Access tokens), then add the server to your client. It runs with `npx`, so
+there is nothing to install beforehand (Node 22 or later).
 
 Claude Code:
 
@@ -163,8 +199,8 @@ over 64 KiB. What it leaves to the host: authenticating the caller (and the `401
 flowchart LR
   Agent["MCP client<br>(Claude Code, Cursor…)"] -- "stdio, JSON-RPC" --> Server["pyxis-mcp<br>(on the user's machine)"]
   Server -- "HTTPS GET<br>Authorization: Bearer pyxis_at_…" --> API["Pyxis API"]
-  Remote["Remote MCP client"] -- "Streamable HTTP POST<br>with the caller's token" --> Host["A host's endpoint<br>handleHttpRequest"]
-  Host -- "GET with the same token" --> API
+  Remote["Claude · Claude Code"] -- "Streamable HTTP POST<br>OAuth access token" --> Host["Pyxis API, /mcp<br>handleHttpRequest"]
+  Host -- "GET in process, same token" --> API
   API --> DB[("Events")]
 ```
 
@@ -172,7 +208,8 @@ The local server opens no port and keeps no state. The API decides what the toke
 exactly as it does for a dashboard session ([ADR 0002](docs/adr/0002-local-read-only-server.md)).
 A host runs the same tools for remote clients: it authenticates the caller, and the tools read with
 that caller's token, so the token never leaves the server that issued it
-([ADR 0003](docs/adr/0003-stateless-http-handler-for-hosts.md)).
+([ADR 0003](docs/adr/0003-stateless-http-handler-for-hosts.md)). The Pyxis API is that host: it
+signs Claude in with OAuth and runs the tools at `/mcp`.
 
 ## Tech stack
 
@@ -253,8 +290,8 @@ docs/adr/            architecture decision records
 - [x] Tools over the API's read routes, tested against its OpenAPI contract
 - [x] First release on npm, with provenance
 - [x] The tools as a library, served over stateless Streamable HTTP by a host
-- [ ] A remote endpoint in the Pyxis API, signed in with OAuth, for clients that only take URLs
-- [ ] Setup guides for Claude Code, Claude Desktop and Cursor
+- [x] A remote endpoint in the Pyxis API, signed in with OAuth, for clients that only take URLs
+- [x] Setup for Claude, Claude Code and clients that send a header
 
 ## Contributing and license
 
