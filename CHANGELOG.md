@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.2.0...v0.3.0) (2026-10-16)
+
+
+### Features
+
+* **server:** point an agent with an empty project to the install guide ([a75ad76](https://github.com/samuelcsantana/pyxis-mcp/commit/a75ad7647aeb7c0483933297a713b67c844c78c2))
+
+
+### Documentation
+
+* **readme:** explain how to connect Pyxis from Claude ([bf3bcb8](https://github.com/samuelcsantana/pyxis-mcp/commit/bf3bcb8c06feb30de8272daaefe7929e3b977178))
+
 ## [0.2.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.1.0...v0.2.0) (2026-10-15)
 
 
