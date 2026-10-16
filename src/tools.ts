@@ -420,7 +420,11 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
       }
       return {
         path: projectPath(args.project_id, 'timeline'),
-        query: { session_id: args.session_id, user_id: args.user_id, before: args.before },
+        query: {
+          session_id: args.session_id,
+          user_id: args.user_id,
+          before: args.before === undefined ? undefined : new Date(args.before).toISOString(),
+        },
       };
     },
   }),
