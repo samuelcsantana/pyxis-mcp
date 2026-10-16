@@ -49,7 +49,10 @@ is no personal data to hand over: events carry no cookies, no addresses and no u
 ## Tools
 
 Every tool only reads, and maps to one `GET` route of the Pyxis API. Dates are `YYYY-MM-DD` in the
-project's time zone; `list_projects` gives each project's today, so call it first.
+project's time zone; `list_projects` gives each project's today, so call it first. The server's
+instructions tell the agent what an empty account means: with no project, one is created in the
+dashboard; with a project that has received no event, the site does not run the tracker yet, and
+[llms.txt](https://pyxis-analytics.dev/llms.txt) explains how to install it.
 
 | Tool               | What it answers                                                                                           |
 | ------------------ | --------------------------------------------------------------------------------------------------------- |
