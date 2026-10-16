@@ -1,6 +1,6 @@
 {
   "name": "pyxis-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "MCP server for Pyxis, privacy-first product analytics: lets an AI agent read your dashboard's numbers with a read-only token, locally over stdio or hosted over HTTP.",
   "keywords": [
     "mcp",

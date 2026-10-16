@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.3.0...v0.4.0) (2026-10-16)
+
+
+### Features
+
+* **tools:** name the (ad click) source in the descriptions ([c68a964](https://github.com/samuelcsantana/pyxis-mcp/commit/c68a964d222b5b19f218e62ab636a288372a6885))
+* **tools:** write the times of every answer in the project time zone ([4dde548](https://github.com/samuelcsantana/pyxis-mcp/commit/4dde548adfd41268425f616171007eaaeaa7e5e0))
+
+
+### Bug Fixes
+
+* **tools:** send the timeline cursor to the API in UTC ([41505d6](https://github.com/samuelcsantana/pyxis-mcp/commit/41505d6acd5da0f1c7712ce4f885fac6dc5d4964))
+
+
+### Documentation
+
+* record why the tools write times in the project time zone ([2a5894a](https://github.com/samuelcsantana/pyxis-mcp/commit/2a5894a93a90db13e3083ae07480771c3032c208))
+
 ## [0.3.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.2.0...v0.3.0) (2026-10-16)
 
 
