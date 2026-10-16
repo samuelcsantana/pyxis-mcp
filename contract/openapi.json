@@ -60,7 +60,7 @@
       },
       "AcquisitionReport": {
         "additionalProperties": false,
-        "description": "Visits per day and channel, every channel named, the top sources and the top campaigns: the source is the campaign source, else the referring host, else \"(direct)\", and the campaign is utm_campaign, both taken from the first page view of the visit that carries a channel. Visits without a campaign are left out of campaigns.",
+        "description": "Visits per day and channel, every channel named, the top sources and the top campaigns: the source is the campaign source, else the referring host, else \"(ad click)\" when the visit came from an ad click, else \"(direct)\", and the campaign is utm_campaign, both taken from the first page view of the visit that carries a channel. Visits without a campaign are left out of campaigns.",
         "properties": {
           "campaigns": {
             "items": {
@@ -267,6 +267,234 @@
         ],
         "type": "object"
       },
+      "AddedProjectPerson": {
+        "additionalProperties": false,
+        "description": "The person, now on the project.",
+        "properties": {
+          "added": {
+            "description": "False when the person already read the project; no e-mail goes out then",
+            "type": "boolean"
+          },
+          "person": {
+            "$ref": "#/components/schemas/ProjectPerson"
+          }
+        },
+        "required": [
+          "person",
+          "added"
+        ],
+        "type": "object"
+      },
+      "AuthorizationDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "redirect_to": {
+            "description": "Where the dashboard sends the browser next",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "redirect_to"
+        ],
+        "type": "object"
+      },
+      "AuthorizationRequest": {
+        "additionalProperties": false,
+        "description": "A connection request waiting for the signed-in admin, as the consent page shows it.",
+        "properties": {
+          "client": {
+            "additionalProperties": false,
+            "properties": {
+              "host": {
+                "description": "The host of the client metadata document address",
+                "type": "string"
+              },
+              "name": {
+                "description": "Our name for the client, never the one its document declares",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "host"
+            ],
+            "type": "object"
+          },
+          "connection_limit_reached": {
+            "type": "boolean"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "projects": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "redirect": {
+            "additionalProperties": false,
+            "properties": {
+              "host": {
+                "description": "Where the browser returns with the code",
+                "type": "string"
+              },
+              "loopback": {
+                "description": "True when the code goes to a program on this computer",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "host",
+              "loopback"
+            ],
+            "type": "object"
+          },
+          "scope": {
+            "enum": [
+              "read"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "client",
+          "redirect",
+          "scope",
+          "expires_at",
+          "projects",
+          "connection_limit_reached"
+        ],
+        "type": "object"
+      },
+      "AuthorizationServerMetadata": {
+        "additionalProperties": false,
+        "description": "RFC 8414 metadata of this issuer.",
+        "properties": {
+          "authorization_endpoint": {
+            "format": "uri",
+            "type": "string"
+          },
+          "authorization_response_iss_parameter_supported": {
+            "enum": [
+              true
+            ],
+            "type": "boolean"
+          },
+          "client_id_metadata_document_supported": {
+            "enum": [
+              true
+            ],
+            "type": "boolean"
+          },
+          "code_challenge_methods_supported": {
+            "items": {
+              "enum": [
+                "S256"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "grant_types_supported": {
+            "items": {
+              "enum": [
+                "authorization_code",
+                "refresh_token"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "issuer": {
+            "format": "uri",
+            "type": "string"
+          },
+          "response_types_supported": {
+            "items": {
+              "enum": [
+                "code"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "revocation_endpoint": {
+            "format": "uri",
+            "type": "string"
+          },
+          "revocation_endpoint_auth_methods_supported": {
+            "items": {
+              "enum": [
+                "none"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scopes_supported": {
+            "items": {
+              "enum": [
+                "read"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "token_endpoint": {
+            "format": "uri",
+            "type": "string"
+          },
+          "token_endpoint_auth_methods_supported": {
+            "items": {
+              "enum": [
+                "none"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "issuer",
+          "authorization_endpoint",
+          "token_endpoint",
+          "revocation_endpoint",
+          "response_types_supported",
+          "grant_types_supported",
+          "code_challenge_methods_supported",
+          "token_endpoint_auth_methods_supported",
+          "revocation_endpoint_auth_methods_supported",
+          "scopes_supported",
+          "client_id_metadata_document_supported",
+          "authorization_response_iss_parameter_supported"
+        ],
+        "type": "object"
+      },
       "BatchRequest": {
         "additionalProperties": false,
         "description": "A batch of events from the browser, sent as text/plain or application/json. More than 50 events answer 413.",
@@ -293,6 +521,173 @@
           "key",
           "sent_at",
           "events"
+        ],
+        "type": "object"
+      },
+      "BillingRedirect": {
+        "additionalProperties": false,
+        "description": "Where to send the browser next, on Stripe.",
+        "properties": {
+          "url": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
+      "CheckoutRequest": {
+        "additionalProperties": false,
+        "description": "The billing period and the page language.",
+        "properties": {
+          "interval": {
+            "enum": [
+              "month",
+              "year"
+            ],
+            "type": "string"
+          },
+          "locale": {
+            "description": "The language of the dashboard asking, as a BCP 47 tag (en, pt-BR, es). The email is written in it when the API has it (matched on the language, so pt-PT gets pt-BR and es-MX gets es), else in English.",
+            "maxLength": 35,
+            "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "interval"
+        ],
+        "type": "object"
+      },
+      "CloseAccountRequest": {
+        "additionalProperties": false,
+        "description": "The confirmation of a closure.",
+        "properties": {
+          "confirm_email": {
+            "description": "The owner's e-mail address, typed again to confirm",
+            "format": "email",
+            "maxLength": 254,
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirm_email"
+        ],
+        "type": "object"
+      },
+      "ClosedAccount": {
+        "additionalProperties": false,
+        "description": "The account, closed now: its keys are revoked and its data waits for deletion.",
+        "properties": {
+          "access_ends_at": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "deletion_on": {
+            "description": "When the projects, their events and their keys are deleted for good",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "refunded_amount": {
+            "description": "What was refunded, in the smallest unit of the currency (centavos); 0 for nothing",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "access_ends_at",
+          "deletion_on",
+          "refunded_amount"
+        ],
+        "type": "object"
+      },
+      "Connections": {
+        "additionalProperties": false,
+        "description": "The applications connected by the signed-in admin, the newest first: neither revoked nor idle for ninety days.",
+        "properties": {
+          "connections": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "client": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "host": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "host"
+                  ],
+                  "type": "object"
+                },
+                "created_at": {
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "type": "string"
+                },
+                "id": {
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "type": "string"
+                },
+                "last_used_at": {
+                  "description": "Recorded at most every five minutes, and at every token refresh",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "client",
+                "created_at",
+                "last_used_at"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "connector": {
+            "additionalProperties": false,
+            "properties": {
+              "open": {
+                "description": "Whether applications can connect now",
+                "type": "boolean"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "format": "uri",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The address to add as a connector; null while closed"
+              }
+            },
+            "required": [
+              "open",
+              "url"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "connector",
+          "connections"
         ],
         "type": "object"
       },
@@ -355,6 +750,95 @@
           "created_at",
           "expires_at",
           "token"
+        ],
+        "type": "object"
+      },
+      "CreatedProject": {
+        "additionalProperties": false,
+        "description": "The new project and the public key its site sends events with.",
+        "properties": {
+          "project_id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "public_key": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "key"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "project_id",
+          "public_key"
+        ],
+        "type": "object"
+      },
+      "CreatedProjectKey": {
+        "additionalProperties": false,
+        "description": "The new key.",
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "key": {
+            "description": "The key itself; a secret key is shown only in this answer, never again",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "public",
+              "secret"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "key"
+        ],
+        "type": "object"
+      },
+      "DeletedProject": {
+        "additionalProperties": false,
+        "description": "What the deletion removed.",
+        "properties": {
+          "deleted_events": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "deleted_keys": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "project_id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "deleted_events",
+          "deleted_keys"
         ],
         "type": "object"
       },
@@ -937,7 +1421,7 @@
       },
       "FunnelSubjectsReport": {
         "additionalProperties": false,
-        "description": "The visits (mode=visit: session ids) or identified people (mode=user: user ids) behind one step of a funnel: outcome=reached those who reached step n (1 is the first), outcome=dropped those who reached step n - 1 and never step n. last_step_at is when they reached the last step they did; newest first, 50 per page. next_cursor goes back as cursor for the older page, null on the last one.",
+        "description": "The visits (mode=visit: session ids) or identified people (mode=user: user ids) behind one step of a funnel: outcome=reached those who reached step n (1 is the first), outcome=dropped those who reached step n - 1 and never step n. last_step_at is when they reached the last step they did; newest first, 50 per page. next_cursor goes back as cursor for the older page, null on the last one. Times are UTC; timezone names the project zone to show them in.",
         "properties": {
           "next_cursor": {
             "type": [
@@ -965,11 +1449,16 @@
               "type": "object"
             },
             "type": "array"
+          },
+          "timezone": {
+            "description": "The IANA time zone of the project, such as America/Sao_Paulo: every time in this answer is a UTC instant, to be shown in this zone",
+            "type": "string"
           }
         },
         "required": [
           "subjects",
-          "next_cursor"
+          "next_cursor",
+          "timezone"
         ],
         "type": "object"
       },
@@ -1104,6 +1593,91 @@
         ],
         "type": "object"
       },
+      "JsonRpcMessage": {
+        "additionalProperties": {},
+        "description": "A JSON-RPC 2.0 answer of the Model Context Protocol: a result or an error.",
+        "properties": {
+          "error": {
+            "additionalProperties": {},
+            "properties": {
+              "code": {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "type": "object"
+          },
+          "id": {
+            "type": [
+              "string",
+              "number",
+              "null"
+            ]
+          },
+          "jsonrpc": {
+            "enum": [
+              "2.0"
+            ],
+            "type": "string"
+          },
+          "result": {}
+        },
+        "required": [
+          "jsonrpc"
+        ],
+        "type": "object"
+      },
+      "ManagedProject": {
+        "additionalProperties": false,
+        "description": "The settings of the project after the change.",
+        "properties": {
+          "allowed_origins": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "conversion_event": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "allowed_origins",
+          "timezone",
+          "conversion_event",
+          "created_at"
+        ],
+        "type": "object"
+      },
       "Me": {
         "additionalProperties": false,
         "description": "The signed-in admin and the projects they may read.",
@@ -1148,6 +1722,26 @@
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                   "type": "string"
                 },
+                "ingestion_suspended_at": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Since when the operator suspended the project's event reception (its batches answer 403 project_suspended while its screens stay open); null when it takes events"
+                },
+                "ingestion_suspension_reason": {
+                  "description": "Why the reception is suspended, as told to the owner of the account; null for everyone else and when it is not suspended",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "last_event_at": {
                   "anyOf": [
                     {
@@ -1175,7 +1769,9 @@
                 "conversion_event",
                 "first_event_at",
                 "last_event_at",
-                "icon_version"
+                "icon_version",
+                "ingestion_suspended_at",
+                "ingestion_suspension_reason"
               ],
               "type": "object"
             },
@@ -1185,6 +1781,475 @@
         "required": [
           "email",
           "projects"
+        ],
+        "type": "object"
+      },
+      "MyAccounts": {
+        "additionalProperties": false,
+        "description": "The accounts the signed-in admin owns or reads a project of, with their billing state for owners and the month measured so far.",
+        "properties": {
+          "accounts": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "access_ends_at": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "billing_interval": {
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "month",
+                        "year"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "current_period_ends_at": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "deletion_held_at": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Set while the operator holds the deletion of the account (a dispute or a legal order): nothing of it is deleted, and its projects cannot be deleted, until it is released. Null for members."
+                },
+                "events_this_month": {
+                  "anyOf": [
+                    {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Events counted by the last daily measurement; null before the first."
+                },
+                "id": {
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "type": "string"
+                },
+                "ingestion_paused_until": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "limits": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "events_per_month": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "people": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "projects": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "events_per_month",
+                    "projects",
+                    "people"
+                  ],
+                  "type": "object"
+                },
+                "measured_at": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "month": {
+                  "description": "The calendar month in UTC the usage is counted in, YYYY-MM.",
+                  "type": "string"
+                },
+                "quota_pause_exempt_until": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Until when the operator exempts the account from the pause at 150% of the plan (a customer of an earlier version of the terms, until its renewal); null when it is not."
+                },
+                "role": {
+                  "enum": [
+                    "owner",
+                    "member"
+                  ],
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "incomplete",
+                    "trialing",
+                    "active",
+                    "past_due",
+                    "ending",
+                    "ended",
+                    "comped"
+                  ],
+                  "type": "string"
+                },
+                "suspended_at": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Set while the operator suspended the account for abuse: its projects take no events and answer account_suspended in the dashboard until it is lifted."
+                },
+                "suspension_reason": {
+                  "description": "Why the account is suspended, as told to the owner; null for members.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "trial_ends_at": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "role",
+                "status",
+                "billing_interval",
+                "trial_ends_at",
+                "current_period_ends_at",
+                "access_ends_at",
+                "ingestion_paused_until",
+                "quota_pause_exempt_until",
+                "suspended_at",
+                "suspension_reason",
+                "deletion_held_at",
+                "month",
+                "events_this_month",
+                "measured_at",
+                "limits"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "accounts"
+        ],
+        "type": "object"
+      },
+      "NewProject": {
+        "additionalProperties": false,
+        "description": "A project to create in the account.",
+        "properties": {
+          "allowed_origins": {
+            "description": "Scheme, host and port of each site that sends events, as its Origin header says",
+            "items": {
+              "maxLength": 300,
+              "type": "string"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "type": "array"
+          },
+          "conversion_event": {
+            "maxLength": 64,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timezone": {
+            "description": "An IANA time zone, such as America/Sao_Paulo",
+            "maxLength": 64,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "allowed_origins"
+        ],
+        "type": "object"
+      },
+      "NewProjectKey": {
+        "additionalProperties": false,
+        "description": "The kind of key to create.",
+        "properties": {
+          "kind": {
+            "enum": [
+              "public",
+              "secret"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      "NewProjectPerson": {
+        "additionalProperties": false,
+        "description": "The address to add, and the language of the invitation e-mail.",
+        "properties": {
+          "email": {
+            "format": "email",
+            "maxLength": 254,
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "type": "string"
+          },
+          "locale": {
+            "description": "The language of the dashboard asking, as a BCP 47 tag (en, pt-BR, es). The email is written in it when the API has it (matched on the language, so pt-PT gets pt-BR and es-MX gets es), else in English.",
+            "maxLength": 35,
+            "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "OAuthAuthorizationQuery": {
+        "additionalProperties": {},
+        "properties": {
+          "client_id": {
+            "description": "The address of the client metadata document; only Claude and Claude Code",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "code_challenge": {
+            "description": "The S256 challenge of the PKCE code verifier",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "code_challenge_method": {
+            "description": "Always S256",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "redirect_uri": {
+            "description": "One of the addresses the client metadata document lists",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "resource": {
+            "description": "When sent, the MCP endpoint of this API",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "response_type": {
+            "description": "Always code",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "scope": {
+            "description": "Ignored: a connection always reads, and only reads",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "state": {
+            "description": "Sent back unchanged, at most 512 characters",
+            "maxLength": 2048,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OAuthError": {
+        "additionalProperties": false,
+        "description": "An error in the shape of RFC 6749, section 5.2.",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "error_description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "error_description"
+        ],
+        "type": "object"
+      },
+      "OAuthRevocationRequest": {
+        "additionalProperties": {},
+        "properties": {
+          "client_id": {
+            "description": "Ignored: holding the token is enough to end it",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "token": {
+            "description": "An access or refresh token of the connection to end",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "token_type_hint": {
+            "description": "Ignored: either token ends the whole connection",
+            "maxLength": 2048,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OAuthTokenRequest": {
+        "additionalProperties": {},
+        "properties": {
+          "client_id": {
+            "description": "The client that received the code or the refresh token",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "code": {
+            "description": "The code from the authorization response",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "code_verifier": {
+            "description": "The PKCE verifier of the code challenge",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "grant_type": {
+            "description": "authorization_code or refresh_token",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "redirect_uri": {
+            "description": "When sent, the same address as in the authorization request",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "refresh_token": {
+            "description": "A pyxis_ort_ token, traded once",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "resource": {
+            "description": "When sent, the MCP endpoint of this API",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "scope": {
+            "description": "Ignored: a connection always reads, and only reads",
+            "maxLength": 2048,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OAuthTokenResponse": {
+        "additionalProperties": false,
+        "description": "The tokens of a connection, read-only, for the dashboard queries.",
+        "properties": {
+          "access_token": {
+            "pattern": "^pyxis_oat_[A-Za-z0-9_-]{43}$",
+            "type": "string"
+          },
+          "expires_in": {
+            "description": "Seconds the access token lives: one hour",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "refresh_token": {
+            "description": "Traded once for the next pair; presenting it again later ends the connection",
+            "pattern": "^pyxis_ort_[A-Za-z0-9_-]{43}$",
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "read"
+            ],
+            "type": "string"
+          },
+          "token_type": {
+            "enum": [
+              "Bearer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "refresh_token",
+          "scope"
         ],
         "type": "object"
       },
@@ -1605,10 +2670,226 @@
         ],
         "type": "object"
       },
+      "PortalRequest": {
+        "additionalProperties": false,
+        "description": "The language of the billing portal.",
+        "properties": {
+          "locale": {
+            "description": "The language of the dashboard asking, as a BCP 47 tag (en, pt-BR, es). The email is written in it when the API has it (matched on the language, so pt-PT gets pt-BR and es-MX gets es), else in English.",
+            "maxLength": 35,
+            "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectChanges": {
+        "additionalProperties": false,
+        "description": "The settings to change; the rest stay.",
+        "properties": {
+          "allowed_origins": {
+            "description": "Scheme, host and port of each site that sends events, as its Origin header says",
+            "items": {
+              "maxLength": 300,
+              "type": "string"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "type": "array"
+          },
+          "conversion_event": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The event counted as a conversion; null clears it"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "timezone": {
+            "description": "An IANA time zone, such as America/Sao_Paulo",
+            "maxLength": 64,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectDeletion": {
+        "additionalProperties": false,
+        "description": "The confirmation of a deletion.",
+        "properties": {
+          "confirm_name": {
+            "description": "The project's name, typed again",
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirm_name"
+        ],
+        "type": "object"
+      },
+      "ProjectExport": {
+        "additionalProperties": false,
+        "description": "An export of a project's events.",
+        "properties": {
+          "available_until": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Until when the file can be downloaded; null before it is ready"
+          },
+          "download_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A link to the file, valid for five minutes; null unless the file is ready"
+          },
+          "event_count": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "done",
+              "failed"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "requested_at",
+          "finished_at",
+          "event_count",
+          "available_until",
+          "download_url"
+        ],
+        "type": "object"
+      },
+      "ProjectPeople": {
+        "additionalProperties": false,
+        "description": "The people who read the project, oldest first.",
+        "properties": {
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectPerson"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "people"
+        ],
+        "type": "object"
+      },
+      "ProjectPerson": {
+        "additionalProperties": false,
+        "description": "Someone who reads the project.",
+        "properties": {
+          "added_at": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "admin_user_id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "email": {
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "type": "string"
+          },
+          "role": {
+            "description": "The owner of the account changes the project; a member reads it",
+            "enum": [
+              "owner",
+              "member"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "admin_user_id",
+          "email",
+          "role",
+          "added_at"
+        ],
+        "type": "object"
+      },
       "ProjectSettings": {
         "additionalProperties": false,
-        "description": "The settings of a project, read-only: they change through the command line.",
+        "description": "The settings of a project. The owner of its account changes them from the dashboard; the operator's own projects change through the command line.",
         "properties": {
+          "account_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The account that pays for the project; null for the operator's own projects"
+          },
           "allowed_origins": {
             "description": "The origins whose pages may send events with a public key",
             "items": {
@@ -1627,6 +2908,19 @@
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
             "type": "string"
+          },
+          "deletion_held_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Since when the operator holds the deletion of the project (a dispute or a legal order): it cannot be deleted, and its events are kept past the retention, until released; the reason is never shown"
           },
           "event_retention_months": {
             "description": "How many months an event is kept before the daily retention job deletes it",
@@ -1651,6 +2945,26 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
+          },
+          "ingestion_suspended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Since when the operator suspended the project's event reception (its batches answer 403 project_suspended while its screens stay open); null when it takes events"
+          },
+          "ingestion_suspension_reason": {
+            "description": "Why the reception is suspended, as told to the owner of the account; null for everyone else and when it is not suspended",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "last_event_at": {
             "anyOf": [
@@ -1697,6 +3011,21 @@
             },
             "type": "array"
           },
+          "role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "owner",
+                  "member"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether the admin owns that account and may change the project, or only reads it; null for the operator's own projects, which change through the command line"
+          },
           "secret_keys": {
             "description": "The live secret keys, oldest first, by id and creation time only: a secret key is stored as a hash and never shown",
             "items": {
@@ -1734,11 +3063,16 @@
           "conversion_event",
           "allowed_origins",
           "created_at",
+          "account_id",
+          "role",
           "first_event_at",
           "last_event_at",
           "event_retention_months",
           "public_keys",
-          "secret_keys"
+          "secret_keys",
+          "ingestion_suspended_at",
+          "ingestion_suspension_reason",
+          "deletion_held_at"
         ],
         "type": "object"
       },
@@ -1817,6 +3151,54 @@
         ],
         "type": "object"
       },
+      "ProtectedResourceMetadata": {
+        "additionalProperties": false,
+        "description": "RFC 9728 metadata of the MCP endpoint, the same at both addresses.",
+        "properties": {
+          "authorization_servers": {
+            "description": "This API itself",
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "bearer_methods_supported": {
+            "items": {
+              "enum": [
+                "header"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "resource": {
+            "description": "The MCP endpoint of this API, the audience of every token",
+            "format": "uri",
+            "type": "string"
+          },
+          "resource_name": {
+            "type": "string"
+          },
+          "scopes_supported": {
+            "items": {
+              "enum": [
+                "read"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "resource",
+          "authorization_servers",
+          "scopes_supported",
+          "bearer_methods_supported",
+          "resource_name"
+        ],
+        "type": "object"
+      },
       "RequestCodeRequest": {
         "additionalProperties": false,
         "description": "The email to send a sign-in code to, and the language to write it in.",
@@ -1839,9 +3221,27 @@
         ],
         "type": "object"
       },
+      "RequestedExport": {
+        "additionalProperties": false,
+        "description": "The export, being prepared; an e-mail tells the owner when it is ready.",
+        "properties": {
+          "export": {
+            "$ref": "#/components/schemas/ProjectExport"
+          },
+          "requested": {
+            "description": "False when an export of the project was already waiting; that one is answered",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "export",
+          "requested"
+        ],
+        "type": "object"
+      },
       "RequestsReport": {
         "additionalProperties": false,
-        "description": "Writes (methods other than GET, kind=writes) or failed reads (GET, kind=reads) per route, the most failing first: a failure is status 0 or 400 and above. Reads count failures only, so total equals failed and no rate can be drawn from them: a site may send a GET only when it fails. Screens are the pages the calls were made from; at most five recent failures per route, newest first. days counts the calls of every route per day by status class (success below 400, client_error 4xx, server_error 5xx, no_response status 0). route_days, only when a route is asked, gives that route per day: calls, failures, and the median and 95th percentile duration (null on a day without calls).",
+        "description": "Writes (methods other than GET, kind=writes) or failed reads (GET, kind=reads) per route, the most failing first: a failure is status 0 or 400 and above. Reads count failures only, so total equals failed and no rate can be drawn from them: a site may send a GET only when it fails. Screens are the pages the calls were made from; at most five recent failures per route, newest first. days counts the calls of every route per day by status class (success below 400, client_error 4xx, server_error 5xx, no_response status 0). route_days, only when a route is asked, gives that route per day: calls, failures, and the median and 95th percentile duration (null on a day without calls). The days are counted in the project time zone, named in timezone; the failure times are UTC.",
         "properties": {
           "days": {
             "items": {
@@ -2078,13 +3478,18 @@
               "type": "object"
             },
             "type": "array"
+          },
+          "timezone": {
+            "description": "The IANA time zone of the project, such as America/Sao_Paulo: every time in this answer is a UTC instant, to be shown in this zone",
+            "type": "string"
           }
         },
         "required": [
           "kind",
           "routes",
           "days",
-          "route_days"
+          "route_days",
+          "timezone"
         ],
         "type": "object"
       },
@@ -2171,6 +3576,116 @@
         "required": [
           "email",
           "session_token"
+        ],
+        "type": "object"
+      },
+      "SignedUp": {
+        "additionalProperties": false,
+        "description": "The new (or returning) owner, their session token, kept by the dashboard like a sign-in, and the account waiting for its subscription.",
+        "properties": {
+          "account_id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "email": {
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "type": "string"
+          },
+          "session_token": {
+            "pattern": "^[A-Za-z0-9_-]{43}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "session_token",
+          "account_id"
+        ],
+        "type": "object"
+      },
+      "SignUpCodeRequest": {
+        "additionalProperties": false,
+        "description": "The email to send a sign-up code to, and the language to write it in.",
+        "properties": {
+          "email": {
+            "format": "email",
+            "maxLength": 254,
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "type": "string"
+          },
+          "locale": {
+            "description": "The language of the dashboard asking, as a BCP 47 tag (en, pt-BR, es). The email is written in it when the API has it (matched on the language, so pt-PT gets pt-BR and es-MX gets es), else in English.",
+            "maxLength": 35,
+            "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "SignUpRequest": {
+        "additionalProperties": false,
+        "description": "The email, the six-digit code it received and the version of the terms accepted.",
+        "properties": {
+          "code": {
+            "pattern": "^\\d{6}$",
+            "type": "string"
+          },
+          "email": {
+            "format": "email",
+            "maxLength": 254,
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "type": "string"
+          },
+          "terms_version": {
+            "description": "The version of the terms the person read and accepted on the sign-up page.",
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "code",
+          "terms_version"
+        ],
+        "type": "object"
+      },
+      "SignUpStatus": {
+        "additionalProperties": false,
+        "description": "Whether anyone can create an account now.",
+        "properties": {
+          "open": {
+            "type": "boolean"
+          },
+          "terms_url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the terms of that version are published; null while closed."
+          },
+          "terms_version": {
+            "description": "The version of the terms the sign-up page must show; null while closed.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "open",
+          "terms_version",
+          "terms_url"
         ],
         "type": "object"
       },
@@ -2315,7 +3830,7 @@
       },
       "TimelineReport": {
         "additionalProperties": false,
-        "description": "The visits of a person (every visit with an event carrying the user id, the one they identified in included) or of one visit, newest first, 20 per page, with all their events. user_id is the first id the visit was identified with, null for an anonymous one. next_before is the cursor for the older page, null on the last one.",
+        "description": "The visits of a person (every visit with an event carrying the user id, the one they identified in included) or of one visit, newest first, 20 per page, with all their events. user_id is the first id the visit was identified with, null for an anonymous one. next_before is the cursor for the older page, null on the last one. Times are UTC; timezone names the project zone to show them in.",
         "properties": {
           "next_before": {
             "anyOf": [
@@ -2328,6 +3843,10 @@
                 "type": "null"
               }
             ]
+          },
+          "timezone": {
+            "description": "The IANA time zone of the project, such as America/Sao_Paulo: every time in this answer is a UTC instant, to be shown in this zone",
+            "type": "string"
           },
           "visits": {
             "items": {
@@ -2467,7 +3986,8 @@
         },
         "required": [
           "visits",
-          "next_before"
+          "next_before",
+          "timezone"
         ],
         "type": "object"
       },
@@ -2536,13 +4056,17 @@
       },
       "VisitsReport": {
         "additionalProperties": false,
-        "description": "The visits with events in the range, newest first, 50 per page. A visit is one browser tab; nothing links two of them. entry_path is its first page view, highlights its first named events in order, failed_requests its api_request events with status 0 or 400 and above, source and campaign those of its entry page view (the source as Acquisition names it), user_id the id it was identified with. total counts every visit that matches the filters, on every page. next_cursor goes back as cursor for the older page, null on the last one.",
+        "description": "The visits with events in the range, newest first, 50 per page. A visit is one browser tab; nothing links two of them. entry_path is its first page view, highlights its first named events in order, failed_requests its api_request events with status 0 or 400 and above, source and campaign those of its entry page view (the source as Acquisition names it), user_id the id it was identified with. total counts every visit that matches the filters, on every page. next_cursor goes back as cursor for the older page, null on the last one. Times are UTC; timezone names the project zone to show them in.",
         "properties": {
           "next_cursor": {
             "type": [
               "string",
               "null"
             ]
+          },
+          "timezone": {
+            "description": "The IANA time zone of the project, such as America/Sao_Paulo: every time in this answer is a UTC instant, to be shown in this zone",
+            "type": "string"
           },
           "total": {
             "maximum": 9007199254740991,
@@ -2683,7 +4207,8 @@
         "required": [
           "visits",
           "next_cursor",
-          "total"
+          "total",
+          "timezone"
         ],
         "type": "object"
       }
@@ -2692,6 +4217,12 @@
       "access_token": {
         "bearerFormat": "opaque",
         "description": "A read-only access token for the dashboard queries: pyxis_at_ followed by 32 letters and digits",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "connection_token": {
+        "bearerFormat": "opaque",
+        "description": "The access token of an application connected through OAuth, read-only, valid one hour: pyxis_oat_ followed by 43 letters, digits, - or _",
         "scheme": "bearer",
         "type": "http"
       },
@@ -2720,6 +4251,105 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/.well-known/oauth-authorization-server": {
+      "get": {
+        "description": "Clients register by the address of their metadata document, never dynamically; only Claude and Claude Code are allowed. 404 while the remote MCP is switched off.",
+        "operationId": "AuthorizationServerController_metadata",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationServerMetadata"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "The authorization server metadata (RFC 8414)",
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/.well-known/oauth-protected-resource": {
+      "get": {
+        "description": "Points a client of the MCP endpoint at this API as its authorization server. 404 while the remote MCP is switched off.",
+        "operationId": "ProtectedResourceController_atRoot",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtectedResourceMetadata"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "The same metadata at the root address, for clients that look there first",
+        "tags": [
+          "mcp"
+        ]
+      }
+    },
+    "/.well-known/oauth-protected-resource/mcp": {
+      "get": {
+        "description": "Points a client of the MCP endpoint at this API as its authorization server. 404 while the remote MCP is switched off.",
+        "operationId": "ProtectedResourceController_forMcp",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtectedResourceMetadata"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "The protected resource metadata of the MCP endpoint (RFC 9728)",
+        "tags": [
+          "mcp"
+        ]
+      }
+    },
     "/health": {
       "get": {
         "operationId": "HealthController_check",
@@ -2751,6 +4381,645 @@
         "summary": "Liveness check of the API",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/mcp": {
+      "post": {
+        "description": "Stateless Streamable HTTP with JSON answers. Each tool reads one dashboard query with the caller's token, inside this API. Without a token, or with a refused one, the answer is 401 with a WWW-Authenticate header that points at the protected resource metadata. A request with an Origin header is refused (403). 404 while the remote MCP is switched off.",
+        "operationId": "McpController_message",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "jsonrpc": {
+                    "const": "2.0"
+                  }
+                },
+                "required": [
+                  "jsonrpc"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "description": "One JSON-RPC 2.0 message of the Model Context Protocol, as JSON.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonRpcMessage"
+                }
+              }
+            },
+            "description": ""
+          },
+          "202": {
+            "description": "A notification, accepted."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonRpcMessage"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access_token": []
+          },
+          {
+            "connection_token": []
+          }
+        ],
+        "summary": "The remote MCP server: the read-only tools of pyxis-mcp, for Claude and others",
+        "tags": [
+          "mcp"
+        ]
+      }
+    },
+    "/oauth/authorize": {
+      "get": {
+        "description": "PKCE with S256 is required. An unknown client or a return address its document does not list is answered here, never redirected; any other refusal goes back to the client.",
+        "operationId": "AuthorizationServerController_authorize",
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "To the consent page, or back with error."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Start a connection: the browser goes to the consent page of the dashboard",
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/oauth/revoke": {
+      "post": {
+        "description": "Answers 200 whether or not the token was known.",
+        "operationId": "AuthorizationServerController_revoke",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthRevocationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The connection no longer works."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthError"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthError"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthError"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "End a connection with either of its tokens (RFC 7009)",
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/oauth/token": {
+      "post": {
+        "description": "A refresh token is traded once: a replay within a minute gets another pair, a later one ends the whole connection. Errors follow RFC 6749, section 5.2.",
+        "operationId": "AuthorizationServerController_token",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthTokenResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthError"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthError"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthError"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuthError"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Trade a code, or a refresh token, for the tokens of a connection",
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/v1/accounts/{accountId}/checkout": {
+      "post": {
+        "description": "Only the owner, while the account has no running subscription. The first one comes with the free trial. An ended account, not yet deleted, may subscribe again even while sign-up is closed, with no trial; leaving that Checkout goes back to /account.",
+        "operationId": "AccountsController_checkout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingRedirect"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Open a Stripe Checkout for the account",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{accountId}/close": {
+      "post": {
+        "description": "Cancels the subscription at once, refunds a first payment made in the last seven days, revokes the keys of its projects and deletes everything thirty days later.",
+        "operationId": "AccountsController_close",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseAccountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClosedAccount"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Close an account the admin owns",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{accountId}/portal": {
+      "post": {
+        "operationId": "AccountsController_portal",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingRedirect"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Open Stripe's billing portal for the account's owner",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/accounts/{accountId}/projects": {
+      "post": {
+        "description": "Up to the plan’s three projects; the account needs a running subscription.",
+        "operationId": "ProjectsController_create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewProject"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedProject"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request did not come from the dashboard, or the account is suspended for abuse (account_suspended)."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Nothing with this id belongs to an account the admin owns; the answer is the same."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The account has no running subscription, or the change breaks a limit."
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Create a project in an account the admin owns",
+        "tags": [
+          "projects"
         ]
       }
     },
@@ -2878,6 +5147,177 @@
         "summary": "Email a sign-in code",
         "tags": [
           "dashboard sign-in"
+        ]
+      }
+    },
+    "/v1/auth/sign-up": {
+      "get": {
+        "operationId": "SignUpController_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUpStatus"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Whether sign-up is open, and the version of the terms a new owner accepts",
+        "tags": [
+          "sign-up"
+        ]
+      }
+    },
+    "/v1/auth/sign-up/code": {
+      "post": {
+        "description": "Answers 202 whoever the email is. A code is created and emailed within the limits per email and per day; 404 while sign-up is closed.",
+        "operationId": "SignUpController_code",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Email a code to create an account",
+        "tags": [
+          "sign-up"
+        ]
+      }
+    },
+    "/v1/auth/sign-up/verify": {
+      "post": {
+        "description": "Records the acceptance of the terms version given, which must be the current one (409 otherwise). An owner who already has a live account gets that account back.",
+        "operationId": "SignUpController_verify",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedUp"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Exchange a sign-up code for a session and an account waiting for its subscription",
+        "tags": [
+          "sign-up"
         ]
       }
     },
@@ -3016,7 +5456,7 @@
                 }
               }
             },
-            "description": "The Origin header is missing or not one of the project's origins."
+            "description": "The Origin header is missing or not one of the project's origins (origin_not_allowed), or the project's account used 150% of its monthly events and is paused until the next month (quota_exceeded), or the account is suspended for abuse (account_suspended), or the project's own reception is suspended (project_suspended); the last three come with a CORS grant so the tracker drops the batch."
           },
           "413": {
             "content": {
@@ -3077,9 +5517,156 @@
           },
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           }
         ],
         "summary": "The signed-in admin and their projects",
+        "tags": [
+          "dashboard sign-in"
+        ]
+      }
+    },
+    "/v1/me/accounts": {
+      "get": {
+        "operationId": "AccountsController_accounts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyAccounts"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "The accounts the signed-in admin owns or reads a project of",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/v1/me/connections": {
+      "get": {
+        "operationId": "ConnectionsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connections"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "The applications connected by the signed-in admin, and whether connecting is open",
+        "tags": [
+          "dashboard sign-in"
+        ]
+      }
+    },
+    "/v1/me/connections/{connectionId}": {
+      "delete": {
+        "operationId": "ConnectionsController_revoke",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Its tokens no longer work."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "No live connection of this admin has this id; the answer never says more."
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Disconnect one application of the signed-in admin, at once",
         "tags": [
           "dashboard sign-in"
         ]
@@ -3375,6 +5962,334 @@
         ]
       }
     },
+    "/v1/oauth/requests/{requestId}": {
+      "get": {
+        "operationId": "AuthorizationRequestsController_describe",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "requestId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationRequest"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unknown, expired or already answered; also while the remote MCP is off."
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "A connection request waiting for the signed-in admin, for the consent page",
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/v1/oauth/requests/{requestId}/approve": {
+      "post": {
+        "operationId": "AuthorizationRequestsController_approve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "requestId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationDecision"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The admin already keeps ten connected applications."
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Allow the application: answers where to send the browser, with a one-time code",
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/v1/oauth/requests/{requestId}/deny": {
+      "post": {
+        "operationId": "AuthorizationRequestsController_deny",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "requestId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationDecision"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Decline the application: answers where to send the browser",
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/v1/projects/{projectId}": {
+      "patch": {
+        "operationId": "ProjectsController_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectChanges"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedProject"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request did not come from the dashboard, or the account is suspended for abuse (account_suspended)."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Nothing with this id belongs to an account the admin owns; the answer is the same."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The account has no running subscription, or the change breaks a limit."
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Change the settings of a project the admin owns",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
     "/v1/projects/{projectId}/acquisition": {
       "get": {
         "operationId": "QueriesController_acquisition",
@@ -3440,6 +6355,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -3456,12 +6381,103 @@
             "access_token": []
           },
           {
+            "connection_token": []
+          },
+          {
             "pyxis_session": []
           }
         ],
         "summary": "Visits per day and channel, and the sources that brought them",
         "tags": [
           "dashboard queries"
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/delete": {
+      "post": {
+        "description": "The name typed again must match; allowed whatever the subscription, but not while the operator holds the deletion of the account (deletion_on_hold).",
+        "operationId": "ProjectsController_remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectDeletion"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedProject"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Nothing with this id belongs to an account the admin owns; the answer is the same."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The name does not match (project_name_mismatch), or the deletion is held (deletion_on_hold)."
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Delete a project the admin owns, with its events and keys",
+        "tags": [
+          "projects"
         ]
       }
     },
@@ -3530,6 +6546,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -3544,6 +6570,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
@@ -3589,6 +6618,16 @@
               }
             },
             "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
           },
           "404": {
             "content": {
@@ -3665,6 +6704,16 @@
               }
             },
             "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request did not come from the dashboard, or the account is suspended for abuse (account_suspended)."
           },
           "404": {
             "content": {
@@ -3753,6 +6802,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -3769,12 +6828,169 @@
             "access_token": []
           },
           {
+            "connection_token": []
+          },
+          {
             "pyxis_session": []
           }
         ],
         "summary": "Entry and exit pages, single-page visits and visit length",
         "tags": [
           "dashboard queries"
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/exports": {
+      "post": {
+        "description": "The owner of the account only, whatever the state of the subscription; three a day per project, one at a time.",
+        "operationId": "ExportsController_create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestedExport"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Nothing with this id belongs to an account the admin owns; the answer is the same."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Export a project's events to a compressed CSV, e-mailed to the owner",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/exports/{exportId}": {
+      "get": {
+        "operationId": "ExportsController_show",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "exportId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectExport"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Nothing with this id belongs to an account the admin owns; the answer is the same."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "An export of a project, with a short download link once it is ready",
+        "tags": [
+          "projects"
         ]
       }
     },
@@ -3855,6 +7071,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -3869,6 +7095,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
@@ -3956,6 +7185,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -3970,6 +7209,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
@@ -4067,6 +7309,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -4081,6 +7333,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
@@ -4178,6 +7433,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -4192,6 +7457,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
@@ -4320,6 +7588,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -4334,6 +7612,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
@@ -4406,6 +7687,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -4425,6 +7716,174 @@
         "summary": "The icon of the project's site",
         "tags": [
           "dashboard queries"
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/keys": {
+      "post": {
+        "description": "At most five live keys of each kind; a secret key is shown only here.",
+        "operationId": "ProjectsController_createKey",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewProjectKey"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedProjectKey"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request did not come from the dashboard, or the account is suspended for abuse (account_suspended)."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Nothing with this id belongs to an account the admin owns; the answer is the same."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The account has no running subscription, or the change breaks a limit."
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Create a public or secret key for a project the admin owns",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/keys/{keyId}": {
+      "delete": {
+        "description": "The last live public key is kept (409), so the site keeps sending events.",
+        "operationId": "ProjectsController_revokeKey",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "keyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Revoked."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Nothing with this id belongs to an account the admin owns; the answer is the same."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The account has no running subscription, or the change breaks a limit."
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Revoke a key of a project the admin owns",
+        "tags": [
+          "projects"
         ]
       }
     },
@@ -4493,6 +7952,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -4509,12 +7978,258 @@
             "access_token": []
           },
           {
+            "connection_token": []
+          },
+          {
             "pyxis_session": []
           }
         ],
         "summary": "KPIs, daily activity, top pages and top events of a range",
         "tags": [
           "dashboard queries"
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/people": {
+      "get": {
+        "operationId": "PeopleController_people",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectPeople"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project does not exist or the admin may not reach it; the answer is the same."
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "The people who read the project, for anyone who reads it",
+        "tags": [
+          "projects"
+        ]
+      },
+      "post": {
+        "description": "Up to the plan’s three people in the account, the owner included; the account needs a running subscription.",
+        "operationId": "PeopleController_add",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewProjectPerson"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddedProjectPerson"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The request did not come from the dashboard, or the account is suspended for abuse (account_suspended)."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project does not exist or the admin may not reach it; the answer is the same."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Add someone to a project the admin owns, and e-mail them an invitation",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/people/{adminUserId}": {
+      "delete": {
+        "description": "The owner of the account always keeps their access (409).",
+        "operationId": "PeopleController_remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "adminUserId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Removed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project does not exist or the admin may not reach it; the answer is the same."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "pyxis_session": []
+          }
+        ],
+        "summary": "Take someone off a project the admin owns",
+        "tags": [
+          "projects"
         ]
       }
     },
@@ -4614,6 +8329,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -4628,6 +8353,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
@@ -4674,6 +8402,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -4688,6 +8426,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
@@ -4764,6 +8505,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -4778,6 +8529,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
@@ -4861,6 +8615,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -4875,6 +8639,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
@@ -5005,7 +8772,7 @@
             }
           },
           {
-            "description": "The source of the visit as Acquisition names it: campaign source, referring host or (direct)",
+            "description": "The source of the visit as Acquisition names it: campaign source, referring host, (ad click) or (direct)",
             "in": "query",
             "name": "source",
             "required": false,
@@ -5096,6 +8863,16 @@
             },
             "description": ""
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The project's account is suspended for abuse (account_suspended)."
+          },
           "404": {
             "content": {
               "application/json": {
@@ -5110,6 +8887,9 @@
         "security": [
           {
             "access_token": []
+          },
+          {
+            "connection_token": []
           },
           {
             "pyxis_session": []
