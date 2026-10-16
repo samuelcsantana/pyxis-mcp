@@ -6,6 +6,10 @@ import { PYXIS_TOOLS, type PyxisTool } from './tools.js';
 
 const CONTRACT_FILE = 'contract/openapi.json';
 const ACCESS_TOKEN_SCHEME = 'access_token';
+const SCHEMA_REFERENCE = '#/components/schemas/';
+const SUCCESS = '200';
+const JSON_MEDIA_TYPE = 'application/json';
+const RESHAPED_ANSWER = 'list_projects';
 const PROJECT = '2b2b2b2b-0000-4000-8000-000000000002';
 const VISIT = '5d2f8c1a-6b3e-4a7f-9c0d-1e2f3a4b5c6d';
 const RANGE = { project_id: PROJECT, from: '2026-10-08', to: '2026-10-14' };
@@ -21,17 +25,28 @@ interface Parameter {
   readonly schema?: { readonly enum?: readonly unknown[]; readonly type?: string };
 }
 
+interface SchemaNode {
+  readonly $ref?: string;
+  readonly format?: string;
+  readonly type?: string | readonly string[];
+  readonly required?: readonly string[];
+  readonly properties?: Readonly<Record<string, SchemaNode>>;
+  readonly items?: SchemaNode;
+  readonly anyOf?: readonly SchemaNode[];
+}
+
 interface Operation {
   readonly parameters?: readonly Parameter[];
   readonly security?: readonly Record<string, unknown>[];
   readonly responses: Record<
     string,
-    { readonly content?: Record<string, { readonly schema?: { readonly $ref?: string } }> }
+    { readonly content?: Record<string, { readonly schema?: SchemaNode }> }
   >;
 }
 
 interface Contract {
   readonly paths: Record<string, { readonly get?: Operation }>;
+  readonly components: { readonly schemas: Readonly<Record<string, SchemaNode>> };
 }
 
 const contract = JSON.parse(readFileSync(CONTRACT_FILE, 'utf8')) as Contract;
@@ -84,6 +99,38 @@ function operationOf(tool: PyxisTool): Operation {
   return operation;
 }
 
+function resolved(node: SchemaNode): SchemaNode {
+  if (node.$ref === undefined) {
+    return node;
+  }
+  const schema = contract.components.schemas[node.$ref.slice(SCHEMA_REFERENCE.length)];
+  if (schema === undefined) {
+    throw new Error(`The contract has no ${node.$ref}.`);
+  }
+  return schema;
+}
+
+function answerOf(tool: PyxisTool): SchemaNode {
+  const schema = operationOf(tool).responses[SUCCESS]?.content?.[JSON_MEDIA_TYPE]?.schema;
+  if (schema === undefined) {
+    throw new Error(`GET ${tool.route} declares no JSON answer.`);
+  }
+  return resolved(schema);
+}
+
+function instantPaths(node: SchemaNode, path = ''): string[] {
+  const schema = resolved(node);
+  if (schema.format === 'date-time') {
+    return [path];
+  }
+  const fields = Object.entries(schema.properties ?? {}).flatMap(([key, child]) =>
+    instantPaths(child, path === '' ? key : `${path}.${key}`),
+  );
+  const items = schema.items === undefined ? [] : instantPaths(schema.items, `${path}[]`);
+  const options = (schema.anyOf ?? []).flatMap((option) => instantPaths(option, path));
+  return [...fields, ...items, ...options].sort();
+}
+
 function routePattern(route: string): RegExp {
   const escaped = route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace('\\{projectId\\}', '[^/]+');
   return new RegExp(`^${escaped}$`);
@@ -128,6 +175,25 @@ describe('the tools against the API contract copied from pyxis-api', () => {
     },
   );
 
+  it.each(
+    PYXIS_TOOLS.filter((tool) => tool.name !== RESHAPED_ANSWER).map(
+      (tool) => [tool.name, tool] as const,
+    ),
+  )('%s writes in the project time zone every instant its answer declares', (_name, tool) => {
+    expect([...tool.instants].sort()).toEqual(instantPaths(answerOf(tool)));
+  });
+
+  it.each(
+    PYXIS_TOOLS.filter((tool) => tool.instants.length > 0).map(
+      (tool) => [tool.name, tool] as const,
+    ),
+  )('%s reads the time zone of its instants from the answer', (_name, tool) => {
+    const answer = answerOf(tool);
+
+    expect(answer.required).toContain('timezone');
+    expect(answer.properties?.timezone?.type).toBe('string');
+  });
+
   it('read /v1/me in the shape list_projects expects', () => {
     const ajv = new Ajv2020({ strict: false, allErrors: true });
     addFormats.default(ajv);
@@ -141,7 +207,7 @@ describe('the tools against the API contract copied from pyxis-api', () => {
           name: 'Shop',
           timezone: 'America/Sao_Paulo',
           conversion_event: null,
-          first_event_at: null,
+          first_event_at: '2026-10-01T12:00:00.000Z',
           last_event_at: null,
           icon_version: null,
           ingestion_suspended_at: null,
@@ -149,11 +215,16 @@ describe('the tools against the API contract copied from pyxis-api', () => {
         },
       ],
     };
-    const projectsTool = PYXIS_TOOLS.find((tool) => tool.name === 'list_projects');
+    const projectsTool = PYXIS_TOOLS.find((tool) => tool.name === RESHAPED_ANSWER);
+    const instants = instantPaths(contract.components.schemas.Me ?? {});
 
     expect(validate?.(me), JSON.stringify(validate?.errors)).toBe(true);
+    expect(instants).toContain('projects[].first_event_at');
+    expect(instants).toContain('projects[].last_event_at');
     expect(projectsTool?.report(me, new Date('2026-10-14T12:00:00.000Z'))).toMatchObject({
-      projects: [{ id: PROJECT, today: '2026-10-14' }],
+      projects: [
+        { id: PROJECT, today: '2026-10-14', first_event_at: '2026-10-01T09:00:00.000-03:00' },
+      ],
     });
   });
 });
