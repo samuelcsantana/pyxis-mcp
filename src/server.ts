@@ -6,7 +6,7 @@ import {
   type PyxisTool,
   type ToolRequest,
   ToolInputError,
-  VISITOR_TEXT_NOTE,
+  VISITOR_TEXT_NOTICE,
 } from './tools.js';
 import { PACKAGE_VERSION } from './version.js';
 
@@ -43,7 +43,7 @@ function success(report: unknown): CallToolResult {
     content: [
       {
         type: 'text',
-        text: JSON.stringify({ untrusted_visitor_text: VISITOR_TEXT_NOTE, report }),
+        text: JSON.stringify({ untrusted_visitor_text: VISITOR_TEXT_NOTICE, report }),
       },
     ],
   };

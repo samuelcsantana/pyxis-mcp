@@ -62,7 +62,13 @@ describe('PYXIS_TOOLS', () => {
     ]);
   });
 
-  it('warns about visitor text in every tool that reports visits or events', () => {
+  it('describes what each tool does, without telling the agent what to do', () => {
+    const imperative = /\b(Call|Treat|Give|Ignore|Always|Never|Do not|Don't)\b/;
+
+    expect(PYXIS_TOOLS.filter((candidate) => imperative.test(candidate.description))).toEqual([]);
+  });
+
+  it('says where the visitor text comes from in every tool that reports visits or events', () => {
     const reporting = PYXIS_TOOLS.filter(
       (candidate) => !['list_projects', 'project_settings'].includes(candidate.name),
     );
