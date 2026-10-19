@@ -83,14 +83,16 @@ describe('createServer', () => {
     expect(overview?.inputSchema.required).toEqual(['project_id', 'from', 'to']);
   });
 
-  it('tells an agent that finds no project, or one with no events, where the install guide is', async () => {
+  it("tells an agent that finds no project, or one with no events, where the site's developers find the install guide", async () => {
     const { client } = await connect(() => json({}));
 
     const instructions = client.getInstructions() ?? '';
     expect(instructions).toContain('An empty list means no project was created yet');
     expect(instructions).toContain('first_event_at is null');
     expect(instructions).toContain(INSTALL_GUIDE_URL);
+    expect(instructions).toContain("the site's developers add the npm package pyxis-analytics");
     expect(instructions).toContain('project_settings');
+    expect(instructions).not.toContain('rules');
   });
 
   it("names itself with the package's version when given no options", async () => {

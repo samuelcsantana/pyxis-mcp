@@ -17,7 +17,7 @@ export const INSTALL_GUIDE_URL = 'https://pyxis-analytics.dev/llms.txt';
 export const SERVER_INSTRUCTIONS =
   "Pyxis is privacy-first product analytics: visits, page views, named events and the site's requests to its backend, with no cookies and no personal data. Start with list_projects for the project ids and each project's today, then ask for a range of dates. Every tool only reads. " +
   'An empty list means no project was created yet, or none was shared with this person: projects are created in the Pyxis dashboard. ' +
-  `A project whose first_event_at is null has received nothing, so its site does not run the tracker yet. No tool here can install it; ${INSTALL_GUIDE_URL} explains how (the npm package pyxis-analytics, started with one of the public keys project_settings lists) and the rules an integration must follow.`;
+  `A project whose first_event_at is null has received nothing, so its site does not run the tracker yet. No tool here can install it: the site's developers add the npm package pyxis-analytics, started with one of the public keys project_settings lists, as the install guide at ${INSTALL_GUIDE_URL} documents.`;
 
 export const UNEXPECTED_ANSWER =
   'The Pyxis API answered in a shape this server does not recognize. Update pyxis-mcp, or report it at https://github.com/samuelcsantana/pyxis-mcp/issues.';
