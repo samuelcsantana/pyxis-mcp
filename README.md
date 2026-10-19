@@ -108,12 +108,59 @@ A connection only reads the numbers you see in the dashboard, from every project
 renews itself while it is used (each access token lasts an hour) and ends when you revoke it in the
 dashboard, under Settings, Connected apps, or after 90 days without use; you keep up to ten. The
 data Claude asks for goes from the Pyxis API to Anthropic, which handles it under its own terms.
-Only Claude and Claude Code connect this way. A client that sends a header reaches the same address
-with an access token instead:
+Only Claude and Claude Code connect this way; other clients use an access token.
+
+## Connect from other clients
+
+A client that sends a header reaches the same address with an access token instead of signing in.
+Create one in the dashboard (Settings, Access tokens), choose how long it lives, and revoke it there
+when it is no longer needed. It reads the same projects as its admin, and only reads.
+
+Cursor (`~/.cursor/mcp.json`), with the token in the `PYXIS_TOKEN` environment variable:
+
+```json
+{
+  "mcpServers": {
+    "pyxis": {
+      "url": "https://api.pyxis-analytics.dev/mcp",
+      "headers": { "Authorization": "Bearer ${env:PYXIS_TOKEN}" }
+    }
+  }
+}
+```
+
+VS Code (`mcp.json`), which asks for the token once and keeps it out of the file:
+
+```json
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "pyxis-token",
+      "description": "Pyxis access token",
+      "password": true
+    }
+  ],
+  "servers": {
+    "pyxis": {
+      "type": "http",
+      "url": "https://api.pyxis-analytics.dev/mcp",
+      "headers": { "Authorization": "Bearer ${input:pyxis-token}" }
+    }
+  }
+}
+```
+
+Claude Code, with a token instead of signing in:
 
 ```bash
 claude mcp add --transport http pyxis https://api.pyxis-analytics.dev/mcp --header "Authorization: Bearer pyxis_at_…"
 ```
+
+A client that only runs servers on the computer uses the package with the same token (see
+[Run it on your computer](#run-it-on-your-computer)). ChatGPT cannot connect yet: its connectors
+sign in only with OAuth and cannot send an access token, and the Pyxis OAuth server knows only
+Claude and Claude Code.
 
 ## Configuration
 
