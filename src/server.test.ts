@@ -79,6 +79,10 @@ describe('createServer', () => {
     expect(tools.map((tool) => tool.name)).toEqual(PYXIS_TOOLS.map((tool) => tool.name));
     expect(tools.every((tool) => tool.annotations?.readOnlyHint === true)).toBe(true);
     expect(tools.every((tool) => tool.annotations?.destructiveHint === false)).toBe(true);
+    expect(tools.every((tool) => tool.annotations?.title === tool.title)).toBe(true);
+    expect(tools.find((tool) => tool.name === 'list_projects')?.annotations?.title).toBe(
+      'List projects',
+    );
     const overview = tools.find((tool) => tool.name === 'overview');
     expect(overview?.inputSchema.required).toEqual(['project_id', 'from', 'to']);
   });
