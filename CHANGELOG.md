@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.1](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.4.0...v0.4.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **server:** point to the install guide as documentation for the site's developers ([05d6520](https://github.com/samuelcsantana/pyxis-mcp/commit/05d652059e7636323a33a5e75a43dee2f90b12aa))
+
+
+### Documentation
+
+* **readme:** show how Cursor, VS Code and other clients connect with a token ([6c24380](https://github.com/samuelcsantana/pyxis-mcp/commit/6c24380fe25f6fe16b152aa25d8faec487bb43f5))
+
 ## [0.4.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.3.0...v0.4.0) (2026-10-16)
 
 
