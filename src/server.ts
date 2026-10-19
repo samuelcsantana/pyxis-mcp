@@ -91,7 +91,7 @@ export function createServer(api: PyxisApi, options: ServerOptions = {}): McpSer
         title: tool.title,
         description: tool.description,
         inputSchema: tool.inputSchema,
-        annotations: READ_ONLY,
+        annotations: { ...READ_ONLY, title: tool.title },
       },
       (args) => runTool(tool, api, args, now()),
     );
