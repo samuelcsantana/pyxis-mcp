@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.4.1...v0.4.2) (2026-10-19)
+
+
+### Bug Fixes
+
+* **server:** repeat each tool's title in its annotations ([a1efb02](https://github.com/samuelcsantana/pyxis-mcp/commit/a1efb02c2bfeddc89cf9f09d2da62ef3bb2d3bd5))
+
 ## [0.4.1](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.4.0...v0.4.1) (2026-10-19)
 
 
