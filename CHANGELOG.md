@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.4.2...v0.4.3) (2026-10-19)
+
+
+### Bug Fixes
+
+* **tools:** describe what each tool does, without telling the agent what to do ([a11a777](https://github.com/samuelcsantana/pyxis-mcp/commit/a11a7772e23e449148b986010576ead6e044af24))
+
 ## [0.4.2](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.4.1...v0.4.2) (2026-10-19)
 
 
