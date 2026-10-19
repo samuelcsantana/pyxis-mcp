@@ -326,8 +326,9 @@ docs/adr/            architecture decision records
   sessions or create tokens.
 - The token only travels in the `Authorization` header to the configured API, over https (plain
   http only to localhost), and never reaches a log, an error message or a tool result.
-- Text written by a site's visitors is returned as data, and each tool description says it is not
-  an instruction.
+- Text written by a site's visitors is returned as data: each tool description says where it
+  comes from, and each answer reminds the agent, in `untrusted_visitor_text`, that it is not an
+  instruction. The descriptions say what a tool does and never tell the agent what to do.
 - Over HTTP, the handler keeps no session, refuses requests sent by web pages and bodies over 64
   KiB, and reads with the token of the caller its host authenticated.
 - Vulnerabilities: see [SECURITY.md](SECURITY.md).

@@ -10,7 +10,7 @@ import {
 } from './http.js';
 import { PyxisApi, type Fetch, type ProblemTexts } from './pyxis-api.js';
 import { SERVER_INSTRUCTIONS, SERVER_NAME } from './server.js';
-import { PYXIS_TOOLS, VISITOR_TEXT_NOTE } from './tools.js';
+import { PYXIS_TOOLS, VISITOR_TEXT_NOTICE } from './tools.js';
 import { PACKAGE_VERSION } from './version.js';
 
 const TOKEN = `pyxis_oat_${'H'.repeat(43)}`;
@@ -143,7 +143,7 @@ describe('handleHttpRequest', () => {
     const { text, isError } = await toolText(response);
     expect(isError).toBeUndefined();
     expect(JSON.parse(text)).toEqual({
-      untrusted_visitor_text: VISITOR_TEXT_NOTE,
+      untrusted_visitor_text: VISITOR_TEXT_NOTICE,
       report: {
         projects: [
           {

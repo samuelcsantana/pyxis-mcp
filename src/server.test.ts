@@ -10,7 +10,7 @@ import {
   SERVER_NAME,
   UNEXPECTED_ANSWER,
 } from './server.js';
-import { PYXIS_TOOLS, VISITOR_TEXT_NOTE } from './tools.js';
+import { PYXIS_TOOLS, VISITOR_TEXT_NOTICE } from './tools.js';
 import { PACKAGE_VERSION } from './version.js';
 
 const TOKEN = `pyxis_at_${'Q'.repeat(32)}`;
@@ -121,7 +121,7 @@ describe('createServer', () => {
 
     expect(result.isError).toBeFalsy();
     expect(JSON.parse(textOf(result))).toEqual({
-      untrusted_visitor_text: VISITOR_TEXT_NOTE,
+      untrusted_visitor_text: VISITOR_TEXT_NOTICE,
       report: {
         projects: [
           {
@@ -159,7 +159,7 @@ describe('createServer', () => {
     });
 
     expect(JSON.parse(textOf(result))).toEqual({
-      untrusted_visitor_text: VISITOR_TEXT_NOTE,
+      untrusted_visitor_text: VISITOR_TEXT_NOTICE,
       report: { visits: { current: 7 } },
     });
     expect(fetch.mock.calls[0]?.[0]).toBe(
