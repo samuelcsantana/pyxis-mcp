@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.4](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.4.3...v0.4.4) (2026-10-24)
+
+
+### Bug Fixes
+
+* **deps:** take body-parser 2.4.0 for the compressed body advisory ([2e82d89](https://github.com/samuelcsantana/pyxis-mcp/commit/2e82d89a2096ddfe1d85ed64c829a0cbd91ed063))
+* **deps:** take fast-uri 3.1.9 for the URI normalization advisories ([aeaaf6b](https://github.com/samuelcsantana/pyxis-mcp/commit/aeaaf6bb966174555c63a05bf252b514e97dd824))
+
 ## [0.4.3](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.4.2...v0.4.3) (2026-10-19)
 
 
