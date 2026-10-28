@@ -3,7 +3,15 @@ import path from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { environment, PROJECT, startFakeApi, textOf, TOKEN, type FakeApi } from './support.js';
+import {
+  environment,
+  PROJECT,
+  READING_TIME,
+  startFakeApi,
+  textOf,
+  TOKEN,
+  type FakeApi,
+} from './support.js';
 
 const CLI = path.join(process.cwd(), 'dist', 'cli.js');
 
@@ -58,7 +66,7 @@ describe('pyxis-mcp over stdio', () => {
       arguments: { project_id: PROJECT, from: '2026-10-08', to: '2026-10-14' },
     });
 
-    expect(tools).toHaveLength(15);
+    expect(tools).toHaveLength(16);
     expect(JSON.parse(textOf(projects))).toMatchObject({
       report: { projects: [{ id: PROJECT, name: 'Shop', timezone: 'UTC' }] },
     });
@@ -73,6 +81,29 @@ describe('pyxis-mcp over stdio', () => {
     expect(api.seen[0]?.userAgent).toMatch(/^pyxis-mcp\/\d+\.\d+\.\d+/);
     expect(errors).toEqual([]);
     expect(stderr()).not.toContain(TOKEN);
+  });
+
+  it('answers the median of a numeric property split by another, sending the filters it was given', async () => {
+    const { client } = await startClient({ PYXIS_TOKEN: TOKEN, PYXIS_API_URL: api.url });
+
+    const result = await client.callTool({
+      name: 'property_summary',
+      arguments: {
+        project_id: PROJECT,
+        from: '2026-10-08',
+        to: '2026-10-14',
+        event: 'article_read_100',
+        key: 'seconds',
+        by: 'post',
+        source: 'google',
+      },
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(JSON.parse(textOf(result))).toMatchObject({ report: READING_TIME });
+    expect(api.seen.map((request) => request.url)).toEqual([
+      `/v1/projects/${PROJECT}/features/properties/summary?from=2026-10-08&to=2026-10-14&name=article_read_100&key=seconds&by=post&source=google`,
+    ]);
   });
 
   it('answers a refused token as a tool error, never repeating the token', async () => {
