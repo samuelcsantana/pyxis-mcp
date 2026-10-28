@@ -24,7 +24,7 @@ reading, through a connection or a token you can revoke at any time.**
 </div>
 
 > **Status:** on npm as `pyxis-mcp`, every release published from GitHub Actions with
-> provenance. The fifteen tools read the live Pyxis API. The package also exports them as a
+> provenance. The sixteen tools read the live Pyxis API. The package also exports them as a
 > library, and the Pyxis API serves them at `https://api.pyxis-analytics.dev/mcp`, the remote
 > connector that Claude and Claude Code sign in to with OAuth.
 
@@ -64,6 +64,7 @@ dashboard; with a project that has received no event, the site does not run the 
 | `time_of_day`      | Visits by weekday and local hour                                                                          |
 | `features`         | The most used named events or screens, day by day                                                         |
 | `event_properties` | How the property values of one named event break down                                                     |
+| `property_summary` | The median and quartiles of a numeric property, split by another: how long people read each article       |
 | `requests`         | Calls to the site's backend per route: failures, statuses, durations, latest errors                       |
 | `funnel`           | How many visits or people reached each step, and the time between steps                                   |
 | `funnel_segments`  | The same funnel per device type or channel                                                                |
@@ -227,7 +228,7 @@ export function answerMcp(request: Request, callerToken: string): Promise<Respon
 | Export                                      | What it does                                                          |
 | ------------------------------------------- | --------------------------------------------------------------------- |
 | `handleHttpRequest(request, api, options?)` | Answers one MCP exchange: a web `Request` in, a web `Response` out    |
-| `createServer(api, options?)`               | The MCP server with the fifteen tools, for a transport of your choice |
+| `createServer(api, options?)`               | The MCP server with the sixteen tools, for a transport of your choice |
 | `new PyxisApi(options)`                     | The client the tools read through, one per caller                     |
 
 `PyxisApi` options: `token` and `apiUrl` (required); `userAgent` (default `pyxis-mcp/<version>`);
@@ -294,7 +295,8 @@ npm run lint && npm run typecheck && npm run test:cov && npm run build
   package is also loaded by name with `import` and with `require`.
 - `src/contract.test.ts` checks the tools against `contract/openapi.json`, the API's own contract
   (`npm run contract:sync` copies it from pyxis-api): every route a token may read has a tool,
-  every tool sends only declared parameters, with values inside their enums, and every instant an
+  except the arrivals the dashboard polls to show that new data came in, every tool sends only
+  declared parameters, with values inside their enums, and every instant an
   answer declares is one its tool writes in the project time zone, read from the answer's
   `timezone`.
 - `npm run test:tooling` tests the lint rule and the scripts.
@@ -306,7 +308,7 @@ npm run lint && npm run typecheck && npm run test:cov && npm run build
 src/
 ├── config.ts        reads PYXIS_TOKEN and PYXIS_API_URL
 ├── pyxis-api.ts     one GET to the API, failures as sentences
-├── tools.ts         the fifteen tools: input schemas, routes, requests
+├── tools.ts         the sixteen tools: input schemas, routes, requests
 ├── time-zone.ts     writes the instants of an answer in the project time zone
 ├── server.ts        registers the tools on the MCP server
 ├── http.ts          one stateless Streamable HTTP exchange
