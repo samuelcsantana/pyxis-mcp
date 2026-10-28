@@ -52,6 +52,7 @@ describe('PYXIS_TOOLS', () => {
       'time_of_day',
       'features',
       'event_properties',
+      'property_summary',
       'requests',
       'funnel',
       'funnel_segments',
@@ -319,6 +320,94 @@ describe('features and event_properties', () => {
       query: { from: '2026-10-08', to: '2026-10-14', name: 'plan_chosen' },
     });
     expect(inputProblem('event_properties', { ...RANGE, event: 'Plan Chosen' })).toContain('event');
+  });
+});
+
+describe('property_summary', () => {
+  const READING = { ...RANGE, event: 'article_read_100', key: 'seconds' };
+
+  it('says it answers how long people read each article', () => {
+    expect(tool('property_summary').description).toContain(
+      'how long people read each article: the median of seconds on article_read_100, split by post',
+    );
+  });
+
+  it('sums up one numeric property of a named event, split by another when asked', () => {
+    expect(tool('property_summary').request(READING)).toEqual({
+      path: `/v1/projects/${PROJECT}/features/properties/summary`,
+      query: { from: '2026-10-08', to: '2026-10-14', name: 'article_read_100', key: 'seconds' },
+    });
+    expect(tool('property_summary').request({ ...READING, by: 'post' }).query).toMatchObject({
+      by: 'post',
+    });
+  });
+
+  it('narrows the events to the visits that match every filter, under the names the API reads', () => {
+    const query = tool('property_summary').request({
+      ...READING,
+      pages: ['/blog/*'],
+      visit_event: 'newsletter_signup',
+      visit_property: 'plan=free',
+      channel: 'organic',
+      device: 'desktop',
+      browser: 'firefox',
+      os: 'linux',
+      identity: 'anonymous',
+      country: 'BR',
+      region: 'BR-SP',
+      source: 'google',
+      campaign: 'launch',
+      failed: true,
+    }).query;
+
+    expect(query).toEqual({
+      from: '2026-10-08',
+      to: '2026-10-14',
+      name: 'article_read_100',
+      key: 'seconds',
+      path: ['/blog/*'],
+      event: 'newsletter_signup',
+      property: 'plan=free',
+      channel: 'organic',
+      device: 'desktop',
+      browser: 'firefox',
+      os: 'linux',
+      identity: 'anonymous',
+      country: 'BR',
+      region: 'BR-SP',
+      source: 'google',
+      campaign: 'launch',
+      failed: true,
+    });
+  });
+
+  it('asks for the event a visit property filter belongs to', () => {
+    expect(inputProblem('property_summary', { ...READING, visit_property: 'plan=free' })).toBe(
+      'visit_property filters the values of an event: give visit_event too.',
+    );
+  });
+
+  it.each([
+    [{ key: 'Reading time' }, 'key'],
+    [{ by: 'post-slug' }, 'by'],
+    [{ event: undefined }, 'event'],
+    [{ browser: 'netscape' }, 'browser'],
+    [{ os: 'symbian' }, 'os'],
+  ])('refuses %j, naming the field', (args, field) => {
+    expect(inputProblem('property_summary', { ...READING, ...args })).toContain(field);
+  });
+
+  it('passes the summary through as the API answers it', () => {
+    const body = {
+      name: 'article_read_100',
+      key: 'seconds',
+      by: 'post',
+      overall: { events: 3, median: 140, p25: 95, p75: 210 },
+      groups: [{ value: 'privacy-first', events: 3, median: 140, p25: 95, p75: 210 }],
+      other_count: 0,
+    };
+
+    expect(tool('property_summary').report(body, NOW)).toBe(body);
   });
 });
 

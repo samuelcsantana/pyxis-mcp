@@ -19,6 +19,7 @@ const COUNTRY_CODE = /^[A-Z]{2}$/;
 const REGION_CODE = /^[A-Z]{2}-[A-Z0-9]{1,3}$/;
 const ROUTE = /^[A-Z]+ \/\S*$/;
 const PROPERTY_FILTER = /^[^=]+=.+$/;
+const PROPERTY_KEY = /^[a-z0-9_]{1,40}$/;
 const MAX_FUNNEL_STEPS = 8;
 const MIN_FUNNEL_STEPS = 2;
 const MAX_VISIT_PAGES = 3;
@@ -111,6 +112,12 @@ const channelFilter = z
   .enum(['paid', 'email', 'social', 'campaign', 'organic', 'referral', 'direct'])
   .optional();
 const deviceFilter = z.enum(['mobile', 'tablet', 'desktop', 'other']).optional();
+const browserFilter = z
+  .enum(['chrome', 'safari', 'firefox', 'edge', 'samsung', 'opera', 'other'])
+  .optional();
+const osFilter = z
+  .enum(['android', 'ios', 'windows', 'macos', 'linux', 'chromeos', 'other'])
+  .optional();
 const identityFilter = z.enum(['identified', 'anonymous']).optional();
 const countryFilter = z
   .string()
@@ -296,6 +303,68 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
       path: projectPath(args.project_id, 'features/properties'),
       query: { ...rangeQuery(args), name: args.event },
     }),
+  }),
+  defineTool({
+    name: 'property_summary',
+    title: 'Property summary',
+    description: describeRangeTool(
+      'The median, 25th and 75th percentiles of one numeric property of a named event, overall and split by another property of the same event. It answers questions such as how long people read each article: the median of seconds on article_read_100, split by post. Only events whose property is a JSON number count: overall.events says how many, and the figures are null when none does. With by, groups holds the 10 values of that property carried by the most events, and other_count counts the events of every other value; events without it count in overall only. The visit filters keep only the events of the visits that match all of them.',
+    ),
+    inputSchema: {
+      ...rangeShape,
+      event: eventName.describe('The named event whose property to sum up: article_read_100.'),
+      key: z.string().regex(PROPERTY_KEY).describe('The numeric property to sum up: seconds.'),
+      by: z
+        .string()
+        .regex(PROPERTY_KEY)
+        .optional()
+        .describe('Another property of the same event to split the figures by: post.'),
+      pages: pagesFilter,
+      visit_event: eventName.optional().describe('Only the visits that sent this named event.'),
+      visit_property: propertyFilter
+        .optional()
+        .describe('key=value: visit_event carried this property value. Needs visit_event.'),
+      channel: channelFilter,
+      device: deviceFilter,
+      browser: browserFilter,
+      os: osFilter,
+      identity: identityFilter,
+      country: countryFilter,
+      region: regionFilter,
+      source: sourceFilter,
+      campaign: campaignFilter,
+      failed: z.boolean().optional().describe('true: only the visits with a failed request.'),
+    },
+    route: projectRoute('features/properties/summary'),
+    request: (args) => {
+      if (args.visit_property !== undefined && args.visit_event === undefined) {
+        throw new ToolInputError(
+          'visit_property filters the values of an event: give visit_event too.',
+        );
+      }
+      return {
+        path: projectPath(args.project_id, 'features/properties/summary'),
+        query: {
+          ...rangeQuery(args),
+          name: args.event,
+          key: args.key,
+          by: args.by,
+          path: args.pages,
+          event: args.visit_event,
+          property: args.visit_property,
+          channel: args.channel,
+          device: args.device,
+          browser: args.browser,
+          os: args.os,
+          identity: args.identity,
+          country: args.country,
+          region: args.region,
+          source: args.source,
+          campaign: args.campaign,
+          failed: args.failed,
+        },
+      };
+    },
   }),
   defineTool({
     name: 'requests',

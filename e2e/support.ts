@@ -18,6 +18,17 @@ export const TIMELINE = {
     },
   ],
 };
+export const READING_TIME = {
+  name: 'article_read_100',
+  key: 'seconds',
+  by: 'post',
+  overall: { events: 7, median: 151, p25: 98, p75: 230 },
+  groups: [
+    { value: 'privacy-first', events: 4, median: 180, p25: 120, p75: 240 },
+    { value: 'release-notes', events: 3, median: 95, p25: 70, p75: 130 },
+  ],
+  other_count: 0,
+};
 export const ME = {
   email: 'owner@example.com',
   projects: [
@@ -65,6 +76,10 @@ function answer(seen: SeenRequest[], request: IncomingMessage, response: ServerR
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/overview?`) === true) {
     send(200, { visits: { current: 12, previous: 9 } });
+    return;
+  }
+  if (request.url?.startsWith(`/v1/projects/${PROJECT}/features/properties/summary?`) === true) {
+    send(200, READING_TIME);
     return;
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/timeline?`) === true) {

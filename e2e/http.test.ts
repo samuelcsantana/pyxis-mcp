@@ -102,7 +102,7 @@ describe('pyxis-mcp as a library behind an HTTP host', () => {
       arguments: { project_id: PROJECT, from: '2026-10-08', to: '2026-10-14' },
     });
 
-    expect(tools).toHaveLength(15);
+    expect(tools).toHaveLength(16);
     expect(JSON.parse(textOf(projects))).toMatchObject({
       report: { projects: [{ id: PROJECT, name: 'Shop', timezone: 'UTC' }] },
     });
