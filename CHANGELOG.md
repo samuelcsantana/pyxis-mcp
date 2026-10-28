@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.5.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.4.3...v0.5.0) (2026-10-28)
+
+
+### Features
+
+* **tools:** answer the median of a numeric event property ([9724b3f](https://github.com/samuelcsantana/pyxis-mcp/commit/9724b3f7f6dbc6545fdf731474e53fca5fab7f9d))
+
+
+### Bug Fixes
+
+* **deps:** take body-parser 2.4.0 for the compressed body advisory ([2e82d89](https://github.com/samuelcsantana/pyxis-mcp/commit/2e82d89a2096ddfe1d85ed64c829a0cbd91ed063))
+* **deps:** take fast-uri 3.1.9 for the URI normalization advisories ([aeaaf6b](https://github.com/samuelcsantana/pyxis-mcp/commit/aeaaf6bb966174555c63a05bf252b514e97dd824))
+
+
+### Refactoring
+
+* **tools:** define the visit filters once ([4e566db](https://github.com/samuelcsantana/pyxis-mcp/commit/4e566dba2cc25d44907ba6246226fb94d400ff2c))
+
+
+### Documentation
+
+* **readme:** list property_summary among the tools ([04fbf53](https://github.com/samuelcsantana/pyxis-mcp/commit/04fbf53a6dbebdc8d4b5d54d6f7c05823afb6d39))
+
 ## [0.4.3](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.4.2...v0.4.3) (2026-10-19)
 
 
