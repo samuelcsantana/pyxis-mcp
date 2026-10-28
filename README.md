@@ -268,7 +268,7 @@ signs Claude in with OAuth and runs the tools at `/mcp`.
 
 ## Tech stack
 
-TypeScript (strict) on Node 22 or later, ES modules. Vitest with V8 coverage, ESLint
+TypeScript (strict) on Node 22 or later, ES modules. Vitest with V8 coverage, fast-check, ESLint
 (`typescript-eslint` strict, type-checked) and Prettier, Husky and commitlint, GitHub Actions with
 CodeQL, OpenSSF Scorecard, Dependabot and release-please.
 
@@ -285,6 +285,15 @@ npm run lint && npm run typecheck && npm run test:cov && npm run build
   functions and lines. The server is tested with a real MCP client over an in-memory transport and
   a fake `fetch`; the HTTP handler with web `Request` objects, from `initialize` to a tool call,
   and every refusal.
+- Property-based tests with [fast-check](https://fast-check.dev) (`src/*.property.test.ts`) check
+  the rules over generated inputs: `offsetOf` reads back any offset a time zone can name;
+  `inTimeZone` writes, for every time zone, a local time that names the same instant; `localTimes`
+  rewrites exactly the UTC instants at the given paths, adds or drops no field and changes nothing
+  more on a second pass; `readConfig` fails with nothing but a `ConfigError` for any environment
+  and accepts a token exactly when it matches the pattern; `todayIn` is the date of the local
+  times the reports write. Each property runs 200 times from a fixed seed
+  (`src/property-parameters.ts`, left out of the build), so CI and the pre-commit hook see the same
+  inputs, and a failure prints the counterexample with the seed to replay it.
 - One file is left out of the unit coverage: `src/cli.ts`, which only wires the modules to the
   standard input and output. `npm run test:e2e` covers it: after `npm run build`, a real MCP client
   starts `dist/cli.js`, lists the tools and calls them against a local fake of the API, checks that
