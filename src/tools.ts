@@ -99,6 +99,43 @@ const eventName = z.string().regex(EVENT_NAME);
 const pagePath = z.string().startsWith('/').max(MAX_TEXT_LENGTH);
 const route = z.string().regex(ROUTE).max(MAX_TEXT_LENGTH);
 const cursor = z.string().min(1).max(MAX_TEXT_LENGTH);
+const propertyFilter = z.string().regex(PROPERTY_FILTER).max(MAX_TEXT_LENGTH);
+const pagesFilter = z
+  .array(pagePath)
+  .max(MAX_VISIT_PAGES)
+  .optional()
+  .describe(
+    'Up to 3 page paths the visit viewed, every one of them; a star matches any characters.',
+  );
+const channelFilter = z
+  .enum(['paid', 'email', 'social', 'campaign', 'organic', 'referral', 'direct'])
+  .optional();
+const deviceFilter = z.enum(['mobile', 'tablet', 'desktop', 'other']).optional();
+const identityFilter = z.enum(['identified', 'anonymous']).optional();
+const countryFilter = z
+  .string()
+  .regex(COUNTRY_CODE)
+  .optional()
+  .describe('Two-letter country code: BR.');
+const regionFilter = z
+  .string()
+  .regex(REGION_CODE)
+  .optional()
+  .describe('ISO 3166-2 region code: BR-SP.');
+const sourceFilter = z
+  .string()
+  .min(1)
+  .max(MAX_SOURCE_LENGTH)
+  .optional()
+  .describe(
+    'The source as acquisition names it: campaign source, referring host, (ad click) or (direct).',
+  );
+const campaignFilter = z
+  .string()
+  .min(1)
+  .max(MAX_CAMPAIGN_LENGTH)
+  .optional()
+  .describe('The utm_campaign.');
 
 const funnelStep = z.discriminatedUnion('type', [
   z.object({
@@ -355,36 +392,18 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     ),
     inputSchema: {
       ...rangeShape,
-      pages: z
-        .array(pagePath)
-        .max(MAX_VISIT_PAGES)
-        .optional()
-        .describe(
-          'Up to 3 page paths the visit viewed, every one of them; a star matches any characters.',
-        ),
+      pages: pagesFilter,
       event: eventName.optional().describe('A named event the visit sent.'),
-      property: z
-        .string()
-        .regex(PROPERTY_FILTER)
-        .max(MAX_TEXT_LENGTH)
+      property: propertyFilter
         .optional()
         .describe('key=value: the event above carried this property value. Needs event.'),
-      channel: z
-        .enum(['paid', 'email', 'social', 'campaign', 'organic', 'referral', 'direct'])
-        .optional(),
-      device: z.enum(['mobile', 'tablet', 'desktop', 'other']).optional(),
-      identity: z.enum(['identified', 'anonymous']).optional(),
-      country: z.string().regex(COUNTRY_CODE).optional().describe('Two-letter country code: BR.'),
-      region: z.string().regex(REGION_CODE).optional().describe('ISO 3166-2 region code: BR-SP.'),
-      source: z
-        .string()
-        .min(1)
-        .max(MAX_SOURCE_LENGTH)
-        .optional()
-        .describe(
-          'The source as acquisition names it: campaign source, referring host, (ad click) or (direct).',
-        ),
-      campaign: z.string().min(1).max(MAX_CAMPAIGN_LENGTH).optional().describe('The utm_campaign.'),
+      channel: channelFilter,
+      device: deviceFilter,
+      identity: identityFilter,
+      country: countryFilter,
+      region: regionFilter,
+      source: sourceFilter,
+      campaign: campaignFilter,
       route: route.optional().describe('A request the visit made: POST /orders/:id.'),
       failed: z
         .boolean()
