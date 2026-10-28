@@ -11,6 +11,7 @@ reading, through a connection or a token you can revoke at any time.**
 [![CI](https://github.com/samuelcsantana/pyxis-mcp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/samuelcsantana/pyxis-mcp/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/samuelcsantana/pyxis-mcp/graph/badge.svg)](https://codecov.io/gh/samuelcsantana/pyxis-mcp)
 [![CodeQL](https://github.com/samuelcsantana/pyxis-mcp/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/samuelcsantana/pyxis-mcp/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/samuelcsantana/pyxis-mcp/badge)](https://scorecard.dev/viewer/?uri=github.com/samuelcsantana/pyxis-mcp)
 <br>
 [![License: MIT](https://img.shields.io/github/license/samuelcsantana/pyxis-mcp)](LICENSE)
 [![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](tsconfig.json)
@@ -268,7 +269,7 @@ signs Claude in with OAuth and runs the tools at `/mcp`.
 
 TypeScript (strict) on Node 22 or later, ES modules. Vitest with V8 coverage, ESLint
 (`typescript-eslint` strict, type-checked) and Prettier, Husky and commitlint, GitHub Actions with
-CodeQL, Dependabot and release-please.
+CodeQL, OpenSSF Scorecard, Dependabot and release-please.
 
 ## Getting started
 
