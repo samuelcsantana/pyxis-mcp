@@ -31,20 +31,21 @@ reading, through a connection or a token you can revoke at any time.**
 
 ## Ecosystem
 
-| Repository                                               | Role                                                          |
-| -------------------------------------------------------- | ------------------------------------------------------------- |
-| [pyxis-api](https://github.com/samuelcsantana/pyxis-api) | Ingestion, dashboard sign-in and queries, erasure, retention  |
-| [pyxis-sdk](https://github.com/samuelcsantana/pyxis-sdk) | Browser tracker published to npm as `pyxis-analytics`         |
-| [pyxis-web](https://github.com/samuelcsantana/pyxis-web) | The dashboard: overview, funnels, features, requests          |
-| **pyxis-mcp** (this one)                                 | MCP server that lets an AI agent read the dashboard's numbers |
+| Repository                                               | Role                                                                                   |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [pyxis-api](https://github.com/samuelcsantana/pyxis-api) | Ingestion, sign-in, dashboard queries, accounts and billing, erasure, the MCP endpoint |
+| [pyxis-sdk](https://github.com/samuelcsantana/pyxis-sdk) | Browser tracker published to npm as `pyxis-analytics`                                  |
+| [pyxis-web](https://github.com/samuelcsantana/pyxis-web) | The dashboard and the home page                                                        |
+| **pyxis-mcp** (this one)                                 | MCP server: Claude and other agents read the dashboard's numbers                       |
 
 ## Why it exists
 
 More and more questions about a product are asked to an agent instead of a dashboard: "how did
 last week compare", "where does the sign-up funnel lose people", "which route started failing".
 This server gives Claude Code, Claude Desktop, Cursor and other MCP clients the same numbers the
-Pyxis dashboard shows, and nothing more: it uses an access token that only reads, created by an
-admin in the dashboard's Settings and revocable there at any moment. Like the rest of Pyxis, there
+Pyxis dashboard shows, and nothing more: it reads through a Claude connection the admin allows or
+an access token the admin creates, both read-only and revocable in the dashboard's Settings at any
+moment. Like the rest of Pyxis, there
 is no personal data to hand over: events carry no cookies, no addresses and no user agents.
 
 ## Tools
