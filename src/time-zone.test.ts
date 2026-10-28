@@ -118,6 +118,12 @@ describe('localTimes', () => {
     });
   });
 
+  it('adds no field for a path named after a member every object inherits', () => {
+    const body = { timezone: SAO_PAULO, at: {} };
+
+    expect(localTimes(['constructor', '__proto__', 'hasOwnProperty.at'])(body)).toStrictEqual(body);
+  });
+
   it('builds a new body and leaves the one it was given unchanged', () => {
     const body = { timezone: SAO_PAULO, next_before: '2026-10-14T01:00:00.000Z', visits: [] };
     const sent = structuredClone(body);

@@ -72,7 +72,7 @@ function rewriteAt(value: unknown, steps: readonly string[], rewrite: Rewrite): 
       ? value.map((item: unknown) => rewriteAt(item, rest, rewrite))
       : value;
   }
-  if (!isRecord(value) || !(step in value)) {
+  if (!isRecord(value) || !Object.hasOwn(value, step)) {
     return value;
   }
   return { ...value, [step]: rewriteAt(value[step], rest, rewrite) };
