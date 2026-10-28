@@ -10,6 +10,7 @@ const SCHEMA_REFERENCE = '#/components/schemas/';
 const SUCCESS = '200';
 const JSON_MEDIA_TYPE = 'application/json';
 const RESHAPED_ANSWER = 'list_projects';
+const DASHBOARD_ONLY_ROUTES: readonly string[] = ['/v1/projects/{projectId}/arrivals'];
 const PROJECT = '2b2b2b2b-0000-4000-8000-000000000002';
 const VISIT = '5d2f8c1a-6b3e-4a7f-9c0d-1e2f3a4b5c6d';
 const RANGE = { project_id: PROJECT, from: '2026-10-08', to: '2026-10-14' };
@@ -146,8 +147,10 @@ function readableRoutes(): string[] {
 }
 
 describe('the tools against the API contract copied from pyxis-api', () => {
-  it('cover every route an access token may read, one tool each', () => {
-    expect(PYXIS_TOOLS.map((tool) => tool.route).sort()).toEqual(readableRoutes());
+  it('cover every route an access token may read, one tool each, but those only the dashboard asks', () => {
+    const forAgents = readableRoutes().filter((route) => !DASHBOARD_ONLY_ROUTES.includes(route));
+
+    expect(PYXIS_TOOLS.map((tool) => tool.route).sort()).toEqual(forAgents);
   });
 
   it.each(PYXIS_TOOLS.map((tool) => [tool.name, tool] as const))(
