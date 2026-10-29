@@ -384,6 +384,7 @@ describe('property_summary', () => {
       identity: 'anonymous',
       country: 'BR',
       region: 'BR-SP',
+      city: 'Campinas',
       source: 'google',
       campaign: 'launch',
       failed: true,
@@ -404,6 +405,7 @@ describe('property_summary', () => {
       identity: 'anonymous',
       country: 'BR',
       region: 'BR-SP',
+      city: 'Campinas',
       source: 'google',
       campaign: 'launch',
       failed: true,
@@ -416,12 +418,20 @@ describe('property_summary', () => {
     );
   });
 
+  it('asks for the region a city filter belongs to', () => {
+    expect(inputProblem('property_summary', { ...READING, city: 'Campinas' })).toBe(
+      'city is matched inside a region: give region too.',
+    );
+  });
+
   it.each([
     [{ key: 'Reading time' }, 'key'],
     [{ by: 'post-slug' }, 'by'],
     [{ event: undefined }, 'event'],
     [{ browser: 'netscape' }, 'browser'],
     [{ os: 'symbian' }, 'os'],
+    [{ region: 'BR-SP', city: 'C'.repeat(101) }, 'city'],
+    [{ region: 'BR-SP', city: '' }, 'city'],
   ])('refuses %j, naming the field', (args, field) => {
     expect(inputProblem('property_summary', { ...READING, ...args })).toContain(field);
   });
@@ -530,6 +540,7 @@ describe('visits', () => {
       identity: 'anonymous',
       country: 'BR',
       region: 'BR-SP',
+      city: 'Campinas',
       source: 'instagram',
       campaign: 'launch',
       route: 'POST /orders',
@@ -548,6 +559,7 @@ describe('visits', () => {
       identity: 'anonymous',
       country: 'BR',
       region: 'BR-SP',
+      city: 'Campinas',
       source: 'instagram',
       campaign: 'launch',
       route: 'POST /orders',
@@ -571,10 +583,28 @@ describe('visits', () => {
     );
   });
 
+  it('asks for the region a city filter belongs to', () => {
+    expect(inputProblem('visits', { ...RANGE, country: 'BR', city: 'Campinas' })).toBe(
+      'city is matched inside a region: give region too.',
+    );
+  });
+
+  it('takes the city as typed, up to 100 characters', () => {
+    const longest = 'C'.repeat(100);
+
+    expect(
+      tool('visits').request({ ...RANGE, region: 'BR-SP', city: 'são josé dos campos' }).query,
+    ).toMatchObject({ region: 'BR-SP', city: 'são josé dos campos' });
+    expect(
+      tool('visits').request({ ...RANGE, region: 'BR-SP', city: longest }).query,
+    ).toMatchObject({ city: longest });
+  });
+
   it.each([
     [{ pages: ['/a', '/b', '/c', '/d'] }, 'pages'],
     [{ country: 'Brazil' }, 'country'],
     [{ region: 'SP' }, 'region'],
+    [{ region: 'BR-SP', city: 'C'.repeat(101) }, 'city'],
     [{ channel: 'tv' }, 'channel'],
   ])('refuses the filter %j', (filter, field) => {
     expect(inputProblem('visits', { ...RANGE, ...filter })).toContain(field);

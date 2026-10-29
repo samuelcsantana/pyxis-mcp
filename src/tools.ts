@@ -26,6 +26,7 @@ const MAX_VISIT_PAGES = 3;
 const MAX_SOURCE_LENGTH = 128;
 const MAX_CAMPAIGN_LENGTH = 64;
 const MAX_TEXT_LENGTH = 512;
+const MAX_CITY_LENGTH = 100;
 
 export interface ToolRequest {
   readonly path: string;
@@ -129,6 +130,14 @@ const regionFilter = z
   .regex(REGION_CODE)
   .optional()
   .describe('ISO 3166-2 region code: BR-SP.');
+const cityFilter = z
+  .string()
+  .min(1)
+  .max(MAX_CITY_LENGTH)
+  .optional()
+  .describe(
+    'An approximate city, by its exact name as devices lists it: Salvador. Needs region, since the same name exists in several regions.',
+  );
 const sourceFilter = z
   .string()
   .min(1)
@@ -163,6 +172,15 @@ const funnelMode = z
   .enum(['visit', 'user'])
   .default('visit')
   .describe('visit counts each visit on its own; user follows identified people across visits.');
+
+function checkCityHasRegion(filters: {
+  readonly city?: string | undefined;
+  readonly region?: string | undefined;
+}): void {
+  if (filters.city !== undefined && filters.region === undefined) {
+    throw new ToolInputError('city is matched inside a region: give region too.');
+  }
+}
 
 function rangeQuery(args: { readonly from: string; readonly to: string }): Query {
   return { from: args.from, to: args.to };
@@ -331,6 +349,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
       identity: identityFilter,
       country: countryFilter,
       region: regionFilter,
+      city: cityFilter,
       source: sourceFilter,
       campaign: campaignFilter,
       failed: z.boolean().optional().describe('true: only the visits with a failed request.'),
@@ -342,6 +361,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
           'visit_property filters the values of an event: give visit_event too.',
         );
       }
+      checkCityHasRegion(args);
       return {
         path: projectPath(args.project_id, 'features/properties/summary'),
         query: {
@@ -359,6 +379,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
           identity: args.identity,
           country: args.country,
           region: args.region,
+          city: args.city,
           source: args.source,
           campaign: args.campaign,
           failed: args.failed,
@@ -471,6 +492,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
       identity: identityFilter,
       country: countryFilter,
       region: regionFilter,
+      city: cityFilter,
       source: sourceFilter,
       campaign: campaignFilter,
       route: route.optional().describe('A request the visit made: POST /orders/:id.'),
@@ -486,6 +508,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
       if (args.property !== undefined && args.event === undefined) {
         throw new ToolInputError('property filters the values of an event: give event too.');
       }
+      checkCityHasRegion(args);
       return {
         path: projectPath(args.project_id, 'visits'),
         query: {
@@ -498,6 +521,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
           identity: args.identity,
           country: args.country,
           region: args.region,
+          city: args.city,
           source: args.source,
           campaign: args.campaign,
           route: args.route,
