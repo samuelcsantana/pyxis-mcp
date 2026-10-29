@@ -76,8 +76,8 @@ dashboard; with a project that has received no event, the site does not run the 
 A result is JSON text, `{ "untrusted_visitor_text": "…", "report": … }`: the report is the API's
 answer, and the first field reminds the agent that names, paths and values inside it were written by
 the site's visitors. Times come in the project's time zone, with the offset of each moment
-(`2026-10-13T22:41:41.638-03:00`), where the API answers in UTC; the timeline's `before` takes any
-offset ([ADR 0004](docs/adr/0004-times-in-the-project-time-zone.md)). Problems come back as tool errors the agent can act on (a revoked token, an
+(`2026-10-13T22:41:41.638-03:00`), where the API answers in UTC, and in UTC (`+00:00`) when the
+Node running the server does not know that zone; the timeline's `before` takes any offset ([ADR 0004](docs/adr/0004-times-in-the-project-time-zone.md)). Problems come back as tool errors the agent can act on (a revoked token, an
 unknown project, the rate limit and when to retry). When the API refuses a request (any `4xx`), the
 error carries the API's own code and reason, such as a suspended account; only a `5xx` asks to try
 again later.
