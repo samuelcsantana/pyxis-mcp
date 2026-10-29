@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.6.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.5.0...v0.6.0) (2026-10-29)
+
+
+### Features
+
+* **tools:** describe the cities and the reach that devices answers ([ce49972](https://github.com/samuelcsantana/pyxis-mcp/commit/ce499722a5217f04b72f4503688f026ececfa4c5))
+* **tools:** filter visits and property summaries by city ([f41be16](https://github.com/samuelcsantana/pyxis-mcp/commit/f41be16a2a133d77a5dec3d08dea3a417c07224e))
+
+
+### Bug Fixes
+
+* **time-zone:** follow only the keys a body has, never inherited members ([1f4ddb8](https://github.com/samuelcsantana/pyxis-mcp/commit/1f4ddb831facb59f8430f3c3579ad98008f132fe))
+
+
+### Documentation
+
+* **readme:** add the OpenSSF Scorecard badge ([a0ec857](https://github.com/samuelcsantana/pyxis-mcp/commit/a0ec857d634b5c08ea9f7c3648118552beaf30d8))
+* **readme:** align the Ecosystem table and the access in Why it exists ([63712fc](https://github.com/samuelcsantana/pyxis-mcp/commit/63712fc1745cacb990015078a08d07a86669aeb2))
+* **readme:** describe the property-based tests ([f8e41ef](https://github.com/samuelcsantana/pyxis-mcp/commit/f8e41efabd9a69150f43698ac2faaf0e710b843e))
+* **readme:** name the city and the reach in the tools table ([ba2bf72](https://github.com/samuelcsantana/pyxis-mcp/commit/ba2bf7266e06f95bc6f0695706739667bc0c392a))
+* **readme:** shorten the status note and point the roadmap at the changelog ([b93ff2c](https://github.com/samuelcsantana/pyxis-mcp/commit/b93ff2cf4ff6df818cbcef831141a45dc1e0a4d9))
+
 ## [0.5.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.4.3...v0.5.0) (2026-10-28)
 
 
