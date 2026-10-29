@@ -9,6 +9,7 @@ const MINUTES_PER_HOUR = 60;
 const MILLISECONDS_PER_MINUTE = 60_000;
 const EVERY_ITEM = '[]';
 const PATH_SEPARATOR = '.';
+const FALLBACK_TIME_ZONE = 'UTC';
 
 const utcInstant = z.iso.datetime();
 
@@ -18,6 +19,14 @@ export interface UtcOffset {
 }
 
 type Rewrite = (instant: string) => string;
+
+export function knownTimeZoneOrUtc(timeZone: string): string {
+  try {
+    return new Intl.DateTimeFormat('en-US', { timeZone }).resolvedOptions().timeZone;
+  } catch {
+    return FALLBACK_TIME_ZONE;
+  }
+}
 
 export function offsetOf(offsetName: string): UtcOffset {
   const start = OFFSET_NAME_PREFIX.length;
@@ -40,7 +49,10 @@ function offsetNameAt(formatter: Intl.DateTimeFormat, date: Date): string {
 }
 
 export function inTimeZone(timeZone: string): Rewrite {
-  const formatter = new Intl.DateTimeFormat('en-US', { timeZone, timeZoneName: 'longOffset' });
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: knownTimeZoneOrUtc(timeZone),
+    timeZoneName: 'longOffset',
+  });
   return (instant) => {
     const date = new Date(instant);
     const offset = offsetOf(offsetNameAt(formatter, date));

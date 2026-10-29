@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { inTimeZone, localTimes, offsetOf } from './time-zone.js';
+import { inTimeZone, knownTimeZoneOrUtc, localTimes, offsetOf } from './time-zone.js';
 
 const SAO_PAULO = 'America/Sao_Paulo';
+const UNKNOWN_TIME_ZONE = 'Mars/Olympus_Mons';
 
 describe('offsetOf', () => {
   it.each([
@@ -15,6 +16,26 @@ describe('offsetOf', () => {
   });
 });
 
+describe('knownTimeZoneOrUtc', () => {
+  it.each([
+    [SAO_PAULO, SAO_PAULO],
+    ['UTC', 'UTC'],
+    [UNKNOWN_TIME_ZONE, 'UTC'],
+    ['', 'UTC'],
+  ])('answers %j as %j', (timeZone, known) => {
+    expect(knownTimeZoneOrUtc(timeZone)).toBe(known);
+  });
+
+  it('keeps an alias this runtime knows, rather than falling back to UTC', () => {
+    const buenosAires = knownTimeZoneOrUtc('America/Buenos_Aires');
+
+    expect(buenosAires).not.toBe('UTC');
+    expect(inTimeZone('America/Buenos_Aires')('2026-10-14T01:41:41.638Z')).toBe(
+      '2026-10-13T22:41:41.638-03:00',
+    );
+  });
+});
+
 describe('inTimeZone', () => {
   it.each([
     [SAO_PAULO, '2026-10-14T01:41:41.638Z', '2026-10-13T22:41:41.638-03:00'],
@@ -23,6 +44,12 @@ describe('inTimeZone', () => {
     ['Asia/Tokyo', '2026-10-14T20:00:00Z', '2026-10-15T05:00:00.000+09:00'],
   ])('writes an instant in %s with its offset', (timeZone, instant, local) => {
     expect(inTimeZone(timeZone)(instant)).toBe(local);
+  });
+
+  it('writes an instant in UTC when this runtime does not know the time zone', () => {
+    expect(inTimeZone(UNKNOWN_TIME_ZONE)('2026-10-14T01:41:41.638Z')).toBe(
+      '2026-10-14T01:41:41.638+00:00',
+    );
   });
 
   it('takes the offset of each instant, so a change to daylight saving time shows', () => {
@@ -90,6 +117,20 @@ describe('localTimes', () => {
       next_cursor: '2026-10-14T01:41:41.638Z~5d2f8c1a',
       next_before: null,
       visits: [{ events: [{ occurred_at: '2026-10-13T22:41:41.638-03:00', properties }] }],
+    });
+  });
+
+  it('writes the instants in UTC, and keeps the rest, when this runtime does not know the zone', () => {
+    const body = {
+      timezone: UNKNOWN_TIME_ZONE,
+      next_before: '2026-10-14T01:00:00.000Z',
+      visits: [{ started_at: '2026-10-14T01:41:41.638Z', events: [] }],
+    };
+
+    expect(timeline(body)).toEqual({
+      timezone: UNKNOWN_TIME_ZONE,
+      next_before: '2026-10-14T01:00:00.000+00:00',
+      visits: [{ started_at: '2026-10-14T01:41:41.638+00:00', events: [] }],
     });
   });
 

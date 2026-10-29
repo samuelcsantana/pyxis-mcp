@@ -271,6 +271,10 @@ describe('todayIn', () => {
     expect(todayIn('Asia/Tokyo', NOW)).toBe('2026-10-15');
     expect(todayIn('America/Los_Angeles', NOW)).toBe('2026-10-14');
   });
+
+  it('writes the UTC date when this runtime does not know the time zone', () => {
+    expect(todayIn('Mars/Olympus_Mons', NOW)).toBe('2026-10-15');
+  });
 });
 
 describe('the range tools', () => {
