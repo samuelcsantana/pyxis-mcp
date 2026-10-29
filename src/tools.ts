@@ -249,7 +249,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     'devices',
     'Devices',
     'devices',
-    'Visits and conversions by device type, browser, operating system, country and region.',
+    'Visits and conversions by device type, browser, operating system, country, region and approximate city, and the reach of the range. regions lists the top 10 regions (ISO 3166-2 codes such as BR-SP, with their names), then "other", then a null value for the visits without a region. cities lists the top 20 cities, each with its region, then "other", then a null value for the visits without a city. The city is kept only for a project whose owner turned it on (city_enabled in project_settings); with it off, every visit counts as without a city. reach counts the visits of the range and the continents (as UN M49 groups the countries: Americas, Europe, Asia, Africa, Oceania), countries, regions and cities they came from, with the country and the region that brought the most visits; unknown places count for none.',
   ),
   rangeTool(
     'acquisition',
@@ -456,7 +456,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     title: 'Visits',
     description: describeRangeTool(
       withLocalTimes(
-        'The visits of a range, newest first, 50 a page, each with its entry page, page views, first named events, failed requests, source and campaign, plus the total of matching visits. A visit is one browser tab; nothing links two of them unless the site identified the person.',
+        'The visits of a range, newest first, 50 a page, each with its entry page, page views, first named events, failed requests, source, campaign, country, region and approximate city (null unless the project keeps the city), plus the total of matching visits. A visit is one browser tab; nothing links two of them unless the site identified the person.',
       ),
     ),
     inputSchema: {
@@ -510,7 +510,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
   defineTool({
     name: 'visit_timeline',
     title: 'Visit timeline',
-    description: `${withLocalTimes('Every event of one visit, or every visit of one identified person (the anonymous part of the visit they identified in included), newest first, 20 visits a page. It takes exactly one of session_id (a visit id from visits or funnel_subjects) or user_id.')}\n\n${VISITOR_TEXT_NOTE}`,
+    description: `${withLocalTimes('Every event of one visit, or every visit of one identified person (the anonymous part of the visit they identified in included), newest first, 20 visits a page; each visit names its country, region and approximate city (null unless the project keeps the city). It takes exactly one of session_id (a visit id from visits or funnel_subjects) or user_id.')}\n\n${VISITOR_TEXT_NOTE}`,
     inputSchema: {
       project_id: projectId,
       session_id: z.uuid().optional().describe('A visit id, from visits or funnel_subjects.'),
@@ -550,7 +550,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     name: 'project_settings',
     title: 'Project settings',
     description: withLocalTimes(
-      'The settings of one project: time zone, conversion event, allowed origins, first and latest event, how many months events are kept, the live public keys, and when each live secret key was created (never the secret key itself).',
+      "The settings of one project: time zone, conversion event, allowed origins, first and latest event, how many months events are kept, whether the visitor's approximate city is kept, the live public keys, and when each live secret key was created (never the secret key itself).",
     ),
     inputSchema: { project_id: projectId },
     route: projectRoute('settings'),
