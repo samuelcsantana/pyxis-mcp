@@ -139,6 +139,35 @@ describe('createServer', () => {
     expect(fetch.mock.calls[0]?.[0]).toBe('https://api.example.com/v1/me');
   });
 
+  it('answers a project whose time zone this runtime does not know, in UTC, instead of failing', async () => {
+    const [shop] = ME.projects;
+    const unknownZone = {
+      ...ME,
+      projects: [
+        { ...shop, timezone: 'Mars/Olympus_Mons', first_event_at: '2026-10-14T01:41:41.638Z' },
+      ],
+    };
+    const { client } = await connect(
+      () => json(unknownZone),
+      () => NOW,
+    );
+
+    const result = await client.callTool({ name: 'list_projects', arguments: {} });
+
+    expect(result.isError).toBeFalsy();
+    expect(JSON.parse(textOf(result))).toMatchObject({
+      report: {
+        projects: [
+          {
+            timezone: 'Mars/Olympus_Mons',
+            today: '2026-10-15',
+            first_event_at: '2026-10-14T01:41:41.638+00:00',
+          },
+        ],
+      },
+    });
+  });
+
   it('reads the clock at each call when given none', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(NOW);
