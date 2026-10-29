@@ -25,9 +25,7 @@ reading, through a connection or a token you can revoke at any time.**
 </div>
 
 > **Status:** on npm as `pyxis-mcp`, every release published from GitHub Actions with
-> provenance. The sixteen tools read the live Pyxis API. The package also exports them as a
-> library, and the Pyxis API serves them at `https://api.pyxis-analytics.dev/mcp`, the remote
-> connector that Claude and Claude Code sign in to with OAuth.
+> provenance, and served by the Pyxis API at `https://api.pyxis-analytics.dev/mcp`.
 
 ## Ecosystem
 
@@ -357,12 +355,8 @@ docs/adr/            architecture decision records
 
 ## Roadmap
 
-- [x] Repository skeleton, quality gates, configuration reader
-- [x] Tools over the API's read routes, tested against its OpenAPI contract
-- [x] First release on npm, with provenance
-- [x] The tools as a library, served over stateless Streamable HTTP by a host
-- [x] A remote endpoint in the Pyxis API, signed in with OAuth, for clients that only take URLs
-- [x] Setup for Claude, Claude Code and clients that send a header
+What shipped, release by release, is in the [CHANGELOG](CHANGELOG.md) and the
+[GitHub releases](https://github.com/samuelcsantana/pyxis-mcp/releases).
 
 ## Contributing and license
 
