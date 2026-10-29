@@ -302,6 +302,35 @@ describe('the range tools', () => {
   });
 });
 
+describe("the visitor's approximate city", () => {
+  it('lists the cities devices answers, kept only where the owner turned the city on', () => {
+    const description = tool('devices').description;
+
+    expect(description).toContain(
+      'cities lists the top 20 cities, each with its region, then "other", then a null value for the visits without a city.',
+    );
+    expect(description).toContain('city_enabled in project_settings');
+  });
+
+  it('counts the reach of the range, the continents as UN M49 groups the countries', () => {
+    expect(tool('devices').description).toContain(
+      'reach counts the visits of the range and the continents (as UN M49 groups the countries: Americas, Europe, Asia, Africa, Oceania), countries, regions and cities they came from, with the country and the region that brought the most visits',
+    );
+  });
+
+  it.each(['visits', 'visit_timeline'])('%s names the place of each visit', (name) => {
+    expect(tool(name).description).toContain(
+      'country, region and approximate city (null unless the project keeps the city)',
+    );
+  });
+
+  it('says in the settings whether the city is kept', () => {
+    expect(tool('project_settings').description).toContain(
+      "whether the visitor's approximate city is kept",
+    );
+  });
+});
+
 describe('features and event_properties', () => {
   it('reads named events unless asked for screens', () => {
     expect(tool('features').request(RANGE).query).toEqual({
