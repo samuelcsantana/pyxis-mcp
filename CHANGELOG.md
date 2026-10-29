@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.1](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.6.0...v0.6.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* **time-zone:** write UTC when the runtime does not know the project zone ([8a49f7e](https://github.com/samuelcsantana/pyxis-mcp/commit/8a49f7ee9c25badbf1e922921286bde891d22ef4))
+
+
+### Documentation
+
+* say the times fall back to UTC when the zone is unknown ([dffa518](https://github.com/samuelcsantana/pyxis-mcp/commit/dffa5184d831b8208aee59174b5ef0c945c0ffab))
+
 ## [0.6.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.5.0...v0.6.0) (2026-10-29)
 
 
