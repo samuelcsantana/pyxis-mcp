@@ -38,6 +38,12 @@ written in the project zone with its offset.
   and the API, which reads only the `Z` form, gets the same instant in UTC.
 - **An answer without `timezone`** (an API older than the field) passes unchanged, in UTC, which
   its `Z` suffix states.
+- **A zone the runtime does not know** (a Node whose time zone data is older than the API's)
+  writes the instants in UTC, `+00:00`, and `list_projects` gives the UTC date as the project's
+  today. The answer keeps its `timezone` field, so the agent can see the mismatch, and the tool
+  descriptions say so. Failing the call instead would throw a correct answer away over a
+  formatting step, and the fix it would point to (a newer pyxis-mcp) is not the one that helps
+  (a newer Node). Added in 0.6.1.
 
 ## Consequences
 
