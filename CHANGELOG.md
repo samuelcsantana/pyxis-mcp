@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.6.1...v0.7.0) (2026-11-02)
+
+
+### Features
+
+* **tools:** describe the unique visitors that overview answers ([f647cf1](https://github.com/samuelcsantana/pyxis-mcp/commit/f647cf1acd6e94c492483401fd79bb069158e2ab))
+
+
+### Documentation
+
+* **readme:** name the unique visitors in the tools table ([fbeaf43](https://github.com/samuelcsantana/pyxis-mcp/commit/fbeaf439134435cce76bbfa10e85433723f5dbf2))
+
 ## [0.6.1](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.6.0...v0.6.1) (2026-10-29)
 
 
