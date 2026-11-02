@@ -335,6 +335,66 @@ describe("the visitor's approximate city", () => {
   });
 });
 
+describe('the unique visitors of overview', () => {
+  const visitors = {
+    enabled: true,
+    daily: [
+      { date: '2026-10-14', first_visit: 4, first_this_month: 2, first_today: 1, again_today: 3 },
+    ],
+    months: [{ month: '2026-10', first_visit: 9, first_this_month: 5, exact: false }],
+    previous_daily: [
+      { date: '2026-10-07', first_visit: 3, first_this_month: 1, first_today: 2, again_today: 0 },
+    ],
+    previous_months: [{ month: '2026-10', first_visit: 6, first_this_month: 4, exact: false }],
+  };
+
+  it('counts them only for a project that counts them, every list empty otherwise', () => {
+    const description = tool('overview').description;
+
+    expect(description).toContain(
+      'only for a project that counts them (visitors.enabled, visitors_enabled in project_settings); when enabled is false every list is empty.',
+    );
+    expect(description).toContain('a visit without that mark never counts.');
+  });
+
+  it('adds up the unique visitors of a day from three kinds, the new ones from the first', () => {
+    expect(tool('overview').description).toContain(
+      'the unique visitors of a day are first_visit + first_this_month + first_today, and the new ones are first_visit.',
+    );
+  });
+
+  it("calls a month's sum its unique visitors only when exact is true", () => {
+    expect(tool('overview').description).toContain(
+      "their sum is the month's unique visitors only when exact is true, as when the range holds the whole month or runs from its 1st to today.",
+    );
+  });
+
+  it('covers the previous period and says why days do not add up', () => {
+    const description = tool('overview').description;
+
+    expect(description).toContain(
+      'previous_daily and previous_months hold the same for the previous period.',
+    );
+    expect(description).toContain(
+      'Days do not add up to unique visitors: a browser back on two days counts on both.',
+    );
+    expect(description).toContain('A visitor is a browser: two devices count as two');
+  });
+
+  it('says in the settings whether unique visitors are counted', () => {
+    expect(tool('project_settings').description).toContain('whether unique visitors are counted');
+  });
+
+  it('passes them through as the API answers them', () => {
+    const body = { kpis: { visits: { current: 10, previous: 6 } }, visitors };
+
+    expect(tool('overview').report(body, NOW)).toEqual({
+      kpis: { visits: { current: 10, previous: 6 } },
+      visitors,
+    });
+  });
+});
+
 describe('features and event_properties', () => {
   it('reads named events unless asked for screens', () => {
     expect(tool('features').request(RANGE).query).toEqual({

@@ -261,7 +261,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     'overview',
     'Overview',
     'overview',
-    'Visits, identified users, conversions and failed writes of a range against the previous period, the daily activity of both, and the top pages and events. A range that ends today is compared with the previous period up to the same time of day.',
+    "Visits, identified users, conversions and failed writes of a range against the previous period, the daily activity of both, and the top pages and events. A range that ends today is compared with the previous period up to the same time of day. visitors holds the unique visitors, counted without any identifier and only for a project that counts them (visitors.enabled, visitors_enabled in project_settings); when enabled is false every list is empty. The first event of each visit says whether its browser is new (first_visit), back for the first time this month (first_this_month) or today (first_today), or back again today (again_today); a visit without that mark never counts. daily holds those four counts per day: the unique visitors of a day are first_visit + first_this_month + first_today, and the new ones are first_visit. months holds, per calendar month the range touches, first_visit and first_this_month on the range's days of that month, and exact: their sum is the month's unique visitors only when exact is true, as when the range holds the whole month or runs from its 1st to today. previous_daily and previous_months hold the same for the previous period. Days do not add up to unique visitors: a browser back on two days counts on both. A visitor is a browser: two devices count as two, and a browser whose storage was cleared counts as new.",
   ),
   rangeTool(
     'devices',
@@ -574,7 +574,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     name: 'project_settings',
     title: 'Project settings',
     description: withLocalTimes(
-      "The settings of one project: time zone, conversion event, allowed origins, first and latest event, how many months events are kept, whether the visitor's approximate city is kept, the live public keys, and when each live secret key was created (never the secret key itself).",
+      "The settings of one project: time zone, conversion event, allowed origins, first and latest event, how many months events are kept, whether the visitor's approximate city is kept, whether unique visitors are counted, the live public keys, and when each live secret key was created (never the secret key itself).",
     ),
     inputSchema: { project_id: projectId },
     route: projectRoute('settings'),

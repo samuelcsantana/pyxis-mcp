@@ -29,6 +29,17 @@ export const READING_TIME = {
   ],
   other_count: 0,
 };
+export const VISITORS = {
+  enabled: true,
+  daily: [
+    { date: '2026-10-14', first_visit: 4, first_this_month: 2, first_today: 1, again_today: 3 },
+  ],
+  months: [{ month: '2026-10', first_visit: 9, first_this_month: 5, exact: false }],
+  previous_daily: [
+    { date: '2026-10-07', first_visit: 3, first_this_month: 1, first_today: 2, again_today: 0 },
+  ],
+  previous_months: [{ month: '2026-10', first_visit: 6, first_this_month: 4, exact: false }],
+};
 export const ME = {
   email: 'owner@example.com',
   projects: [
@@ -75,7 +86,7 @@ function answer(seen: SeenRequest[], request: IncomingMessage, response: ServerR
     return;
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/overview?`) === true) {
-    send(200, { visits: { current: 12, previous: 9 } });
+    send(200, { visits: { current: 12, previous: 9 }, visitors: VISITORS });
     return;
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/features/properties/summary?`) === true) {

@@ -113,6 +113,14 @@ const EVERY_ARGUMENT: Readonly<Record<string, Record<string, unknown>>> = {
   project_settings: { project_id: PROJECT },
 };
 
+function toolNamed(name: string): PyxisTool {
+  const found = PYXIS_TOOLS.find((tool) => tool.name === name);
+  if (found === undefined) {
+    throw new Error(`No tool named ${name}.`);
+  }
+  return found;
+}
+
 function operationOf(tool: PyxisTool): Operation {
   const operation = contract.paths[tool.route]?.get;
   if (operation === undefined) {
@@ -151,6 +159,14 @@ function instantPaths(node: SchemaNode, path = ''): string[] {
   const items = schema.items === undefined ? [] : instantPaths(schema.items, `${path}[]`);
   const options = (schema.anyOf ?? []).flatMap((option) => instantPaths(option, path));
   return [...fields, ...items, ...options].sort();
+}
+
+function countedFields(node: SchemaNode): string[] {
+  return Object.entries(resolved(node).properties ?? {}).flatMap(([key, child]) => {
+    const field = resolved(child);
+    const nested = field.items === undefined ? [] : countedFields(field.items);
+    return field.type === 'string' ? nested : [key, ...nested];
+  });
 }
 
 function routePattern(route: string): RegExp {
@@ -216,6 +232,14 @@ describe('the tools against the API contract copied from pyxis-api', () => {
 
     expect(answer.required).toContain('timezone');
     expect(answer.properties?.timezone?.type).toBe('string');
+  });
+
+  it('overview names every list, count and flag of the unique visitors the API answers', () => {
+    const overview = toolNamed('overview');
+    const fields = countedFields(answerOf(overview).properties?.visitors ?? {});
+
+    expect(fields).toEqual(expect.arrayContaining(['enabled', 'again_today', 'exact']));
+    expect(fields.filter((field) => !overview.description.includes(field))).toEqual([]);
   });
 
   it('read /v1/me in the shape list_projects expects', () => {
