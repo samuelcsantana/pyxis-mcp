@@ -57,7 +57,7 @@ dashboard; with a project that has received no event, the site does not run the 
 | Tool               | What it answers                                                                                           |
 | ------------------ | --------------------------------------------------------------------------------------------------------- |
 | `list_projects`    | The projects the token can read: id, name, time zone, today there, conversion event, first and last event |
-| `overview`         | Visits, identified users, conversions and failed writes against the previous period; top pages and events |
+| `overview`         | Visits, unique visitors, identified users, conversions, failed writes vs. last period; top pages, events  |
 | `devices`          | Visits and conversions by device type, browser, system, country, region and city; the reach of the range  |
 | `acquisition`      | Visits per day and channel, and the sources and campaigns behind them                                     |
 | `engagement`       | Entry and exit pages, single-page visits, visit length                                                    |
