@@ -234,6 +234,7 @@ describe('the tools against the API contract copied from pyxis-api', () => {
           first_event_at: '2026-10-01T12:00:00.000Z',
           last_event_at: null,
           icon_version: null,
+          account_id: null,
           ingestion_suspended_at: null,
           ingestion_suspension_reason: null,
         },
