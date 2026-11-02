@@ -1860,6 +1860,16 @@
           "user_id": {
             "pattern": "^[A-Za-z0-9_-]{1,64}$",
             "type": "string"
+          },
+          "visitor": {
+            "description": "Whether the visit is this browser's first, its first this month, its first today or another one today, as the tracker tells from the period of the last answer. Sent on the visit's first event and kept only for a project that counts unique visitors.",
+            "enum": [
+              "first_visit",
+              "first_this_month",
+              "first_today",
+              "again_today"
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -1889,6 +1899,9 @@
             "maximum": 9007199254740991,
             "minimum": 0,
             "type": "integer"
+          },
+          "visitor_period": {
+            "$ref": "#/components/schemas/VisitorPeriod"
           }
         },
         "required": [
@@ -1974,6 +1987,9 @@
           },
           "timezone": {
             "type": "string"
+          },
+          "visitors_enabled": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -1983,6 +1999,7 @@
           "timezone",
           "conversion_event",
           "city_enabled",
+          "visitors_enabled",
           "created_at"
         ],
         "type": "object"
@@ -2000,6 +2017,19 @@
             "items": {
               "additionalProperties": false,
               "properties": {
+                "account_id": {
+                  "anyOf": [
+                    {
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The account that holds the project; null for a project created by the operator outside any account"
+                },
                 "conversion_event": {
                   "type": [
                     "string",
@@ -2079,6 +2109,7 @@
                 "first_event_at",
                 "last_event_at",
                 "icon_version",
+                "account_id",
                 "ingestion_suspended_at",
                 "ingestion_suspension_reason"
               ],
@@ -2644,7 +2675,7 @@
       },
       "OverviewReport": {
         "additionalProperties": false,
-        "description": "Visits, identified users, conversions (null without a conversion event) and failed writes of the range against the previous one (the same number of days right before it), with one daily entry per day of each period.",
+        "description": "Visits, identified users, conversions (null without a conversion event) and failed writes of the range against the previous one (the same number of days right before it), with one daily entry per day of each period, and the unique visitors of both when the project counts them.",
         "properties": {
           "comparison_cutoff": {
             "anyOf": [
@@ -3047,6 +3078,186 @@
               "type": "object"
             },
             "type": "array"
+          },
+          "visitors": {
+            "additionalProperties": false,
+            "description": "Unique visitors counted without an identifier: the tracker marks the first event of each visit with whether its browser is new, back for the first time this month or today, or back again today, and a visit without that mark never counts. The previous lists cover the previous period, cut at the same time as previous_days.",
+            "properties": {
+              "daily": {
+                "description": "One entry per day of the period, oldest first: the visits that started that day, by the kind their first event carried. Unique visitors of the day = first_visit + first_this_month + first_today; new = first_visit. Days do not add up to unique visitors: a browser back on two days counts on both.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "again_today": {
+                      "description": "Visits of a browser that had already visited today",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "date": {
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                      "type": "string"
+                    },
+                    "first_this_month": {
+                      "description": "Visits of a browser seen in an earlier month, back for the first time this month",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "first_today": {
+                      "description": "Visits of a browser seen earlier this month, back for the first time today",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "first_visit": {
+                      "description": "Visits of a browser on its first visit to the site, or its first since its storage was cleared",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "first_visit",
+                    "first_this_month",
+                    "first_today",
+                    "again_today"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "enabled": {
+                "description": "Whether the project counts unique visitors; every list below is empty when false",
+                "type": "boolean"
+              },
+              "months": {
+                "description": "One entry per calendar month the period touches, oldest first, counting only its days inside the period",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "exact": {
+                      "description": "True when the period holds the whole month, or runs from its first day to today: first_visit + first_this_month is then the unique visitors of the month (so far). Otherwise it is not: a period that starts after the 1st leaves out a browser whose first visit this month came before the period, and one that ends earlier covers only its own days.",
+                      "type": "boolean"
+                    },
+                    "first_this_month": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "first_visit": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "month": {
+                      "description": "Calendar month, YYYY-MM",
+                      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "month",
+                    "first_visit",
+                    "first_this_month",
+                    "exact"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "previous_daily": {
+                "description": "One entry per day of the period, oldest first: the visits that started that day, by the kind their first event carried. Unique visitors of the day = first_visit + first_this_month + first_today; new = first_visit. Days do not add up to unique visitors: a browser back on two days counts on both.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "again_today": {
+                      "description": "Visits of a browser that had already visited today",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "date": {
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                      "type": "string"
+                    },
+                    "first_this_month": {
+                      "description": "Visits of a browser seen in an earlier month, back for the first time this month",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "first_today": {
+                      "description": "Visits of a browser seen earlier this month, back for the first time today",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "first_visit": {
+                      "description": "Visits of a browser on its first visit to the site, or its first since its storage was cleared",
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "first_visit",
+                    "first_this_month",
+                    "first_today",
+                    "again_today"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "previous_months": {
+                "description": "One entry per calendar month the period touches, oldest first, counting only its days inside the period",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "exact": {
+                      "description": "True when the period holds the whole month, or runs from its first day to today: first_visit + first_this_month is then the unique visitors of the month (so far). Otherwise it is not: a period that starts after the 1st leaves out a browser whose first visit this month came before the period, and one that ends earlier covers only its own days.",
+                      "type": "boolean"
+                    },
+                    "first_this_month": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "first_visit": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "month": {
+                      "description": "Calendar month, YYYY-MM",
+                      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "month",
+                    "first_visit",
+                    "first_this_month",
+                    "exact"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "enabled",
+              "daily",
+              "months",
+              "previous_daily",
+              "previous_months"
+            ],
+            "type": "object"
           }
         },
         "required": [
@@ -3055,7 +3266,8 @@
           "top_pages",
           "top_events",
           "comparison_cutoff",
-          "previous_days"
+          "previous_days",
+          "visitors"
         ],
         "type": "object"
       },
@@ -3111,6 +3323,10 @@
             "description": "An IANA time zone, such as America/Sao_Paulo",
             "maxLength": 64,
             "type": "string"
+          },
+          "visitors_enabled": {
+            "description": "Count unique visitors without an identifier; off by default. When on, new events keep the kind of visit the tracker sends and each batch's answer carries visitor_period. Turning it off stops keeping the kind within a minute; the kinds already kept stay.",
+            "type": "boolean"
           }
         },
         "type": "object"
@@ -3451,6 +3667,10 @@
           "timezone": {
             "description": "The IANA time zone the days of every report are counted in",
             "type": "string"
+          },
+          "visitors_enabled": {
+            "description": "Whether the project counts unique visitors: new events keep the kind of visit the tracker sends, and no identifier is created or kept; off by default",
+            "type": "boolean"
           }
         },
         "required": [
@@ -3459,6 +3679,7 @@
           "timezone",
           "conversion_event",
           "city_enabled",
+          "visitors_enabled",
           "allowed_origins",
           "created_at",
           "account_id",
@@ -4333,6 +4554,12 @@
                     "string",
                     "null"
                   ]
+                },
+                "visitor": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -4353,6 +4580,7 @@
                 "region",
                 "region_name",
                 "city",
+                "visitor",
                 "properties"
               ],
               "type": "object"
@@ -4608,6 +4836,29 @@
         "required": [
           "email",
           "code"
+        ],
+        "type": "object"
+      },
+      "VisitorPeriod": {
+        "additionalProperties": false,
+        "description": "When the site's day and month end, the same for every visitor of the site that day. Present only when the project counts unique visitors: the tracker keeps it to tell the kind of its next visit, and deletes what it kept when a successful answer comes without it.",
+        "properties": {
+          "day_ends_at": {
+            "description": "The next midnight in the project's time zone, in UTC",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "month_ends_at": {
+            "description": "The first instant of next month in the project's time zone, in UTC",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "day_ends_at",
+          "month_ends_at"
         ],
         "type": "object"
       },
@@ -6105,7 +6356,7 @@
                 }
               }
             },
-            "description": "The batch was processed."
+            "description": "The batch was processed. visitor_period comes only when the project counts unique visitors."
           },
           "400": {
             "content": {
@@ -7734,7 +7985,7 @@
             "pyxis_session": []
           }
         ],
-        "summary": "Visits and conversions by device type, browser, system, country and region",
+        "summary": "Visits and conversions by device type, browser, system, country, region and city, and the reach of the range",
         "tags": [
           "dashboard queries"
         ]
