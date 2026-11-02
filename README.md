@@ -43,8 +43,8 @@ last week compare", "where does the sign-up funnel lose people", "which route st
 This server gives Claude Code, Claude Desktop, Cursor and other MCP clients the same numbers the
 Pyxis dashboard shows, and nothing more: it reads through a Claude connection the admin allows or
 an access token the admin creates, both read-only and revocable in the dashboard's Settings at any
-moment. Like the rest of Pyxis, there
-is no personal data to hand over: events carry no cookies, no addresses and no user agents.
+moment. Like the rest of Pyxis, events
+carry no cookies, no IP addresses and no user agents, so there are none to hand over.
 
 ## Tools
 
