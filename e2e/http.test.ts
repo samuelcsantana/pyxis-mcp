@@ -12,6 +12,7 @@ import {
   TIMELINE,
   TOKEN,
   VISIT,
+  VISITORS,
   type FakeApi,
 } from './support.js';
 
@@ -107,7 +108,7 @@ describe('pyxis-mcp as a library behind an HTTP host', () => {
       report: { projects: [{ id: PROJECT, name: 'Shop', timezone: 'UTC' }] },
     });
     expect(JSON.parse(textOf(overview))).toMatchObject({
-      report: { visits: { current: 12, previous: 9 } },
+      report: { visits: { current: 12, previous: 9 }, visitors: VISITORS },
     });
     expect(api.seen.map((request) => request.url)).toEqual([
       '/v1/me',
