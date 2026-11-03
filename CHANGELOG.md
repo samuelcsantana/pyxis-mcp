@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.7.1...v0.8.0) (2026-11-03)
+
+
+### Features
+
+* **tools:** describe the visitor kind of visits and visit_timeline ([95df5c0](https://github.com/samuelcsantana/pyxis-mcp/commit/95df5c006bace1e64516fa4a9dedce125c7d79d1))
+* **tools:** filter the visits tool by the unique visitors they counted as ([540ef1e](https://github.com/samuelcsantana/pyxis-mcp/commit/540ef1ecb8bc63e3986816c800791a126bb739dc))
+
+
+### Documentation
+
+* **readme:** the unique visitors filter of the visits tool ([ddd710a](https://github.com/samuelcsantana/pyxis-mcp/commit/ddd710a772e19a9927cb60e45de60968d103cae4))
+* **readme:** the visitor kind on the visits tool ([ee4599a](https://github.com/samuelcsantana/pyxis-mcp/commit/ee4599a69091fa8c0e5cdeee1e97283a56f17f01))
+
 ## [0.7.1](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.7.0...v0.7.1) (2026-11-03)
 
 
