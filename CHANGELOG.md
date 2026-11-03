@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.7.0...v0.7.1) (2026-11-03)
+
+
+### Documentation
+
+* **readme:** say no cookies and no stored IP addresses instead of no personal data ([da3225c](https://github.com/samuelcsantana/pyxis-mcp/commit/da3225c6030012de12119a332285c79113c82a8b))
+
 ## [0.7.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.6.1...v0.7.0) (2026-11-02)
 
 
