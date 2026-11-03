@@ -496,6 +496,12 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
       source: sourceFilter,
       campaign: campaignFilter,
       route: route.optional().describe('A request the visit made: POST /orders/:id.'),
+      visitors: z
+        .enum(['day', 'month', 'new'])
+        .optional()
+        .describe(
+          'Only the visits that counted as unique visitors: day keeps first_visit, first_this_month and first_today, so each browser shows once per day and total is the unique visitors of the day (the sum of the days over a longer range); month keeps first_visit and first_this_month, once per calendar month; new keeps first_visit. An empty list when the project does not count unique visitors.',
+        ),
       failed: z
         .boolean()
         .optional()
@@ -525,6 +531,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
           source: args.source,
           campaign: args.campaign,
           route: args.route,
+          visitors: args.visitors,
           failed: args.failed,
           cursor: args.cursor,
         },
