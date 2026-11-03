@@ -608,6 +608,7 @@ describe('visits', () => {
       source: 'instagram',
       campaign: 'launch',
       route: 'POST /orders',
+      visitors: 'day',
       failed: true,
       cursor: 'next-page',
     }).query;
@@ -627,6 +628,7 @@ describe('visits', () => {
       source: 'instagram',
       campaign: 'launch',
       route: 'POST /orders',
+      visitors: 'day',
       failed: true,
       cursor: 'next-page',
     });
