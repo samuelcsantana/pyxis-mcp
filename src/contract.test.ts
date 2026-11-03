@@ -34,6 +34,7 @@ interface SchemaNode {
   readonly properties?: Readonly<Record<string, SchemaNode>>;
   readonly items?: SchemaNode;
   readonly anyOf?: readonly SchemaNode[];
+  readonly enum?: readonly string[];
 }
 
 interface Operation {
@@ -241,6 +242,18 @@ describe('the tools against the API contract copied from pyxis-api', () => {
     expect(fields).toEqual(expect.arrayContaining(['enabled', 'again_today', 'exact']));
     expect(fields.filter((field) => !overview.description.includes(field))).toEqual([]);
   });
+
+  it.each(['visits', 'visit_timeline'])(
+    '%s names every visitor kind a visit carries in the API answer',
+    (name) => {
+      const tool = toolNamed(name);
+      const visit = resolved(answerOf(tool).properties?.visits?.items ?? {});
+      const kinds = (visit.properties?.visitor?.anyOf ?? []).flatMap((option) => option.enum ?? []);
+
+      expect(kinds).toEqual(['first_visit', 'first_this_month', 'first_today', 'again_today']);
+      expect(kinds.filter((kind) => !tool.description.includes(kind))).toEqual([]);
+    },
+  );
 
   it('read /v1/me in the shape list_projects expects', () => {
     const ajv = new Ajv2020({ strict: false, allErrors: true });

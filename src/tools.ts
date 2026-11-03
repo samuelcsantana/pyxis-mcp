@@ -477,7 +477,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     title: 'Visits',
     description: describeRangeTool(
       withLocalTimes(
-        'The visits of a range, newest first, 50 a page, each with its entry page, page views, first named events, failed requests, source, campaign, country, region and approximate city (null unless the project keeps the city), plus the total of matching visits. A visit is one browser tab; nothing links two of them unless the site identified the person.',
+        'The visits of a range, newest first, 50 a page, each with its entry page, page views, first named events, failed requests, source, campaign, country, region and approximate city (null unless the project keeps the city), plus the total of matching visits. A visit is one browser tab; nothing links two of them unless the site identified the person. Each visit also has its visitor kind: first_visit, first_this_month, first_today or again_today, null when the project does not count unique visitors or the visit carried none; the first three count as a unique visitor of their day, first_visit and first_this_month as one of their month, and again_today in neither.',
       ),
     ),
     inputSchema: {
@@ -534,7 +534,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
   defineTool({
     name: 'visit_timeline',
     title: 'Visit timeline',
-    description: `${withLocalTimes('Every event of one visit, or every visit of one identified person (the anonymous part of the visit they identified in included), newest first, 20 visits a page; each visit names its country, region and approximate city (null unless the project keeps the city). It takes exactly one of session_id (a visit id from visits or funnel_subjects) or user_id.')}\n\n${VISITOR_TEXT_NOTE}`,
+    description: `${withLocalTimes('Every event of one visit, or every visit of one identified person (the anonymous part of the visit they identified in included), newest first, 20 visits a page; each visit names its country, region and approximate city (null unless the project keeps the city). It takes exactly one of session_id (a visit id from visits or funnel_subjects) or user_id. Each visit also has its visitor kind: first_visit, first_this_month, first_today or again_today, null when the project does not count unique visitors or the visit carried none; the first three count as a unique visitor of their day, first_visit and first_this_month as one of their month, and again_today in neither.')}\n\n${VISITOR_TEXT_NOTE}`,
     inputSchema: {
       project_id: projectId,
       session_id: z.uuid().optional().describe('A visit id, from visits or funnel_subjects.'),
