@@ -54,24 +54,24 @@ instructions tell the agent what an empty account means: with no project, one is
 dashboard; with a project that has received no event, the site does not run the tracker yet, and
 [llms.txt](https://pyxis-analytics.dev/llms.txt) explains how to install it.
 
-| Tool               | What it answers                                                                                           |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `list_projects`    | The projects the token can read: id, name, time zone, today there, conversion event, first and last event |
-| `overview`         | Visits, unique visitors, identified users, conversions, failed writes vs. last period; top pages, events  |
-| `devices`          | Visits and conversions by device type, browser, system, country, region and city; the reach of the range  |
-| `acquisition`      | Visits per day and channel, and the sources and campaigns behind them                                     |
-| `engagement`       | Entry and exit pages, single-page visits, visit length                                                    |
-| `time_of_day`      | Visits by weekday and local hour                                                                          |
-| `features`         | The most used named events or screens, day by day                                                         |
-| `event_properties` | How the property values of one named event break down                                                     |
-| `property_summary` | The median and quartiles of a numeric property, split by another: how long people read each article       |
-| `requests`         | Calls to the site's backend per route: failures, statuses, durations, latest errors                       |
-| `funnel`           | How many visits or people reached each step, and the time between steps                                   |
-| `funnel_segments`  | The same funnel per device type or channel                                                                |
-| `funnel_subjects`  | The visits or people who reached, or dropped at, one step                                                 |
-| `visits`           | The visits of a range, filtered by pages, events, channel, device, place, campaign, failed requests       |
-| `visit_timeline`   | Every event of one visit, or every visit of one identified person                                         |
-| `project_settings` | Time zone, conversion event, allowed origins, retention, whether the city is kept, live public keys       |
+| Tool               | What it answers                                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `list_projects`    | The projects the token can read: id, name, time zone, today there, conversion event, first and last event                       |
+| `overview`         | Visits, unique visitors, identified users, conversions, failed writes vs. last period; top pages, events                        |
+| `devices`          | Visits and conversions by device type, browser, system, country, region and city; the reach of the range                        |
+| `acquisition`      | Visits per day and channel, and the sources and campaigns behind them                                                           |
+| `engagement`       | Entry and exit pages, single-page visits, visit length                                                                          |
+| `time_of_day`      | Visits by weekday and local hour                                                                                                |
+| `features`         | The most used named events or screens, day by day                                                                               |
+| `event_properties` | How the property values of one named event break down                                                                           |
+| `property_summary` | The median and quartiles of a numeric property, split by another: how long people read each article                             |
+| `requests`         | Calls to the site's backend per route: failures, statuses, durations, latest errors                                             |
+| `funnel`           | How many visits or people reached each step, and the time between steps                                                         |
+| `funnel_segments`  | The same funnel per device type or channel                                                                                      |
+| `funnel_subjects`  | The visits or people who reached, or dropped at, one step                                                                       |
+| `visits`           | The visits of a range, filtered by pages, events, channel, device, place, campaign, failed requests; each with its visitor kind |
+| `visit_timeline`   | Every event of one visit, or every visit of one identified person                                                               |
+| `project_settings` | Time zone, conversion event, allowed origins, retention, whether the city is kept, live public keys                             |
 
 A result is JSON text, `{ "untrusted_visitor_text": "…", "report": … }`: the report is the API's
 answer, and the first field reminds the agent that names, paths and values inside it were written by
