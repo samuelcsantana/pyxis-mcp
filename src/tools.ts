@@ -226,6 +226,7 @@ const projectSchema = z.object({
   name: z.string(),
   timezone: z.string(),
   conversion_event: z.string().nullable(),
+  currency: z.string(),
   first_event_at: z.string().nullable(),
   last_event_at: z.string().nullable(),
 });
@@ -268,6 +269,7 @@ function projectsReport(body: unknown, now: Date): unknown {
         timezone: project.timezone,
         today: todayIn(project.timezone, now),
         conversion_event: project.conversion_event,
+        currency: project.currency,
         first_event_at: project.first_event_at,
         last_event_at: project.last_event_at,
       }),
@@ -310,7 +312,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     name: 'list_projects',
     title: 'List projects',
     description: withLocalTimes(
-      "The Pyxis projects this token can read, each with its id, name, time zone, today's date in that time zone, conversion event (the named event of its first goal, null when that goal is a page or there is none; the goals tool lists every goal), and when its first and latest events arrived. Every other tool takes a project id from here and dates no later than the project's today.",
+      "The Pyxis projects this token can read, each with its id, name, time zone, today's date in that time zone, conversion event (the named event of its first goal, null when that goal is a page or there is none; the goals tool lists every goal), currency (the ISO 4217 code, such as BRL, that its revenue is counted in), and when its first and latest events arrived. Every other tool takes a project id from here and dates no later than the project's today.",
     ),
     inputSchema: {},
     route: '/v1/me',
@@ -697,7 +699,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     name: 'project_settings',
     title: 'Project settings',
     description: withLocalTimes(
-      "The settings of one project: time zone, conversion event (the named event of its first goal; the goals tool lists every goal), allowed origins, first and latest event, how many months events are kept, whether the visitor's approximate city is kept, whether unique visitors are counted, the live public keys, and when each live secret key was created (never the secret key itself).",
+      "The settings of one project: time zone, conversion event (the named event of its first goal; the goals tool lists every goal), currency (the ISO 4217 code, such as BRL, that its revenue is counted in; it only labels the amounts, and changing it converts nothing), allowed origins, first and latest event, how many months events are kept, whether the visitor's approximate city is kept, whether unique visitors are counted, the live public keys, and when each live secret key was created (never the secret key itself).",
     ),
     inputSchema: { project_id: projectId },
     route: projectRoute('settings'),

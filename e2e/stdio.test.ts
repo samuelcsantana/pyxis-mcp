@@ -70,7 +70,7 @@ describe('pyxis-mcp over stdio', () => {
 
     expect(tools).toHaveLength(17);
     expect(JSON.parse(textOf(projects))).toMatchObject({
-      report: { projects: [{ id: PROJECT, name: 'Shop', timezone: 'UTC' }] },
+      report: { projects: [{ id: PROJECT, name: 'Shop', timezone: 'UTC', currency: 'BRL' }] },
     });
     expect(JSON.parse(textOf(overview))).toMatchObject({
       report: { visits: { current: 12, previous: 9 }, visitors: VISITORS },
