@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.8.0...v0.9.0) (2026-11-05)
+
+
+### Features
+
+* **tools:** add the goals tool, each goal with its conversions over a range ([41ae00c](https://github.com/samuelcsantana/pyxis-mcp/commit/41ae00c422584868c8697b73e1fcdd319bef4ce0))
+* **tools:** count a chosen goal as conversions in overview, devices and acquisition ([9716b66](https://github.com/samuelcsantana/pyxis-mcp/commit/9716b662439afb86166d5589a4c43335c55bef07))
+* **tools:** filter visits and property summaries by a reached goal ([69de576](https://github.com/samuelcsantana/pyxis-mcp/commit/69de57610be50135aeb0e7872fbc030764d8181c))
+
+
+### Documentation
+
+* **readme:** the goals tool and the goal the conversions count ([2cc2bd9](https://github.com/samuelcsantana/pyxis-mcp/commit/2cc2bd9f9d9984941888cea2ba1189bffa59795c))
+
 ## [0.8.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.7.1...v0.8.0) (2026-11-03)
 
 
