@@ -15,6 +15,7 @@ const RESHAPED_ANSWERS: readonly string[] = [RESHAPED_ANSWER, GOALS_TOOL];
 const DASHBOARD_ONLY_ROUTES: readonly string[] = ['/v1/projects/{projectId}/arrivals'];
 const GOAL_LIST_ROUTE = '/v1/projects/{projectId}/goals';
 const GOAL_CREATION_TIME = 'created_at';
+const GOAL_CHOICE = 'goal';
 const PROJECT = '2b2b2b2b-0000-4000-8000-000000000002';
 const GOAL = '7c1e2d3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f';
 const NOW = new Date('2026-11-05T12:00:00.000Z');
@@ -61,9 +62,9 @@ const contract = JSON.parse(readFileSync(CONTRACT_FILE, 'utf8')) as Contract;
 
 const EVERY_ARGUMENT: Readonly<Record<string, Record<string, unknown>>> = {
   list_projects: {},
-  overview: RANGE,
-  devices: RANGE,
-  acquisition: RANGE,
+  overview: { ...RANGE, goal: GOAL },
+  devices: { ...RANGE, goal: GOAL },
+  acquisition: { ...RANGE, goal: GOAL },
   goals: {
     ...RANGE,
     pages: ['/pricing'],
@@ -306,6 +307,15 @@ describe('the tools against the API contract copied from pyxis-api', () => {
     expect(instantPaths(answerOf(goals))).toEqual([`goals[].${GOAL_CREATION_TIME}`]);
     expect(fieldsOf(summed)).toEqual(expect.arrayContaining(fieldsOf(listed)));
     expect(Object.keys(report.goals[0] ?? {}).sort()).toEqual(fieldsOf(summed).sort());
+  });
+
+  it('let an agent pick the goal counted as conversions wherever the API counts one', () => {
+    const counting = PYXIS_TOOLS.filter((tool) =>
+      (operationOf(tool).parameters ?? []).some((item) => item.name === GOAL_CHOICE),
+    );
+
+    expect(counting.map((tool) => tool.name)).toEqual(['overview', 'devices', 'acquisition']);
+    expect(counting.every((tool) => GOAL_CHOICE in tool.inputSchema)).toBe(true);
   });
 
   it('read the goals summary in the shape goals expects', () => {

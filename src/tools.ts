@@ -11,6 +11,9 @@ export const VISITOR_TEXT_NOTICE =
 export const LOCAL_TIMES_NOTE =
   'Times are in the project time zone, with their UTC offset: 2026-10-13T22:41:41.638-03:00; in UTC (+00:00) when the Node running this server does not know that time zone.';
 
+export const GOAL_NOTE =
+  "Conversions count one goal: the one goal names, by its id from the goals tool, or else the first goal (goal 1), which started as the project's former conversion event; they are null when the project has no goal.";
+
 const RANGE_RULES =
   "The project id and the project's today come from list_projects. Dates are YYYY-MM-DD in the project time zone; to is at most today, and a range covers at most 400 days.";
 
@@ -158,6 +161,12 @@ const reachedGoalFilter = z
   .describe(
     'Only the visits that reached this goal, by its id from the goals tool: they sent its named event or viewed a page its path matches.',
   );
+const goalChoice = z
+  .uuid()
+  .optional()
+  .describe(
+    'The goal counted as conversions, by its id from the goals tool; without it, the first goal (goal 1).',
+  );
 
 const funnelStep = z.discriminatedUnion('type', [
   z.object({
@@ -278,6 +287,20 @@ function rangeTool(name: string, title: string, segment: string, summary: string
   });
 }
 
+function goalTool(name: string, title: string, segment: string, summary: string): PyxisTool {
+  return defineTool({
+    name,
+    title,
+    description: describeRangeTool(`${summary} ${GOAL_NOTE}`),
+    inputSchema: { ...rangeShape, goal: goalChoice },
+    route: projectRoute(segment),
+    request: (args) => ({
+      path: projectPath(args.project_id, segment),
+      query: { ...rangeQuery(args), goal: args.goal },
+    }),
+  });
+}
+
 export const PYXIS_TOOLS: readonly PyxisTool[] = [
   defineTool({
     name: 'list_projects',
@@ -290,19 +313,19 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     request: () => ({ path: '/v1/me', query: {} }),
     report: projectsReport,
   }),
-  rangeTool(
+  goalTool(
     'overview',
     'Overview',
     'overview',
     "Visits, identified users, conversions and failed writes of a range against the previous period, the daily activity of both, and the top pages and events. A range that ends today is compared with the previous period up to the same time of day. visitors holds the unique visitors, counted without any identifier and only for a project that counts them (visitors.enabled, visitors_enabled in project_settings); when enabled is false every list is empty. The first event of each visit says whether its browser is new (first_visit), back for the first time this month (first_this_month) or today (first_today), or back again today (again_today); a visit without that mark never counts. daily holds those four counts per day: the unique visitors of a day are first_visit + first_this_month + first_today, and the new ones are first_visit. months holds, per calendar month the range touches, first_visit and first_this_month on the range's days of that month, and exact: their sum is the month's unique visitors only when exact is true, as when the range holds the whole month or runs from its 1st to today. previous_daily and previous_months hold the same for the previous period. Days do not add up to unique visitors: a browser back on two days counts on both. A visitor is a browser: two devices count as two, and a browser whose storage was cleared counts as new.",
   ),
-  rangeTool(
+  goalTool(
     'devices',
     'Devices',
     'devices',
     'Visits and conversions by device type, browser, operating system, country, region and approximate city, and the reach of the range. regions lists the top 10 regions (ISO 3166-2 codes such as BR-SP, with their names), then "other", then a null value for the visits without a region. cities lists the top 20 cities, each with its region, then "other", then a null value for the visits without a city. The city is kept only for a project whose owner turned it on (city_enabled in project_settings); with it off, every visit counts as without a city. reach counts the visits of the range and the continents (as UN M49 groups the countries: Americas, Europe, Asia, Africa, Oceania), countries, regions and cities they came from, with the country and the region that brought the most visits; unknown places count for none.',
   ),
-  rangeTool(
+  goalTool(
     'acquisition',
     'Acquisition',
     'acquisition',
@@ -312,7 +335,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     name: 'goals',
     title: 'Goals',
     description: describeRangeTool(
-      "The goals of a project in their order, up to ten, each with its id, name, type (event or page), the named event or the page path that reaches it (a star in the path matches any characters) and its position, and over the range: conversions (the events or page views that reached it), converting_visits (the visits that reached it at least once) and conversion_rate (converting_visits divided by visits, from 0 to 1, null without visits). visits counts the visits of the range. The first goal (goal 1) is the one overview, devices and acquisition count as conversions; it started as the project's former conversion event. The ids here are what reached_goal takes. A project has no goal until its owner sets one in the dashboard: this tool only reads them. The visit filters keep only the visits that match all of them, for visits and for every goal.",
+      "The goals of a project in their order, up to ten, each with its id, name, type (event or page), the named event or the page path that reaches it (a star in the path matches any characters) and its position, and over the range: conversions (the events or page views that reached it), converting_visits (the visits that reached it at least once) and conversion_rate (converting_visits divided by visits, from 0 to 1, null without visits). visits counts the visits of the range. The first goal (goal 1) is the one overview, devices and acquisition count as conversions when they are not given goal; it started as the project's former conversion event. The ids here are what goal and reached_goal take. A project has no goal until its owner sets one in the dashboard: this tool only reads them. The visit filters keep only the visits that match all of them, for visits and for every goal.",
     ),
     inputSchema: {
       ...rangeShape,
