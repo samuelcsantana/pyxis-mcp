@@ -10,8 +10,14 @@ const SCHEMA_REFERENCE = '#/components/schemas/';
 const SUCCESS = '200';
 const JSON_MEDIA_TYPE = 'application/json';
 const RESHAPED_ANSWER = 'list_projects';
+const GOALS_TOOL = 'goals';
+const RESHAPED_ANSWERS: readonly string[] = [RESHAPED_ANSWER, GOALS_TOOL];
 const DASHBOARD_ONLY_ROUTES: readonly string[] = ['/v1/projects/{projectId}/arrivals'];
+const GOAL_LIST_ROUTE = '/v1/projects/{projectId}/goals';
+const GOAL_CREATION_TIME = 'created_at';
 const PROJECT = '2b2b2b2b-0000-4000-8000-000000000002';
+const GOAL = '7c1e2d3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f';
+const NOW = new Date('2026-11-05T12:00:00.000Z');
 const VISIT = '5d2f8c1a-6b3e-4a7f-9c0d-1e2f3a4b5c6d';
 const RANGE = { project_id: PROJECT, from: '2026-10-08', to: '2026-10-14' };
 const STEPS = [
@@ -58,6 +64,24 @@ const EVERY_ARGUMENT: Readonly<Record<string, Record<string, unknown>>> = {
   overview: RANGE,
   devices: RANGE,
   acquisition: RANGE,
+  goals: {
+    ...RANGE,
+    pages: ['/pricing'],
+    event: 'plan_chosen',
+    property: 'plan=pro',
+    channel: 'paid',
+    device: 'tablet',
+    browser: 'safari',
+    os: 'ios',
+    identity: 'anonymous',
+    country: 'BR',
+    region: 'BR-BA',
+    city: 'Salvador',
+    source: 'google',
+    campaign: 'launch',
+    failed: true,
+    reached_goal: GOAL,
+  },
   engagement: RANGE,
   time_of_day: RANGE,
   features: { ...RANGE, kind: 'screens' },
@@ -185,8 +209,10 @@ function readableRoutes(): string[] {
 }
 
 describe('the tools against the API contract copied from pyxis-api', () => {
-  it('cover every route an access token may read, one tool each, but those only the dashboard asks', () => {
-    const forAgents = readableRoutes().filter((route) => !DASHBOARD_ONLY_ROUTES.includes(route));
+  it('cover every route an access token may read, one tool each, but those only the dashboard asks and the goal list goals answers', () => {
+    const forAgents = readableRoutes().filter(
+      (route) => !DASHBOARD_ONLY_ROUTES.includes(route) && route !== GOAL_LIST_ROUTE,
+    );
 
     expect(PYXIS_TOOLS.map((tool) => tool.route).sort()).toEqual(forAgents);
   });
@@ -217,7 +243,7 @@ describe('the tools against the API contract copied from pyxis-api', () => {
   );
 
   it.each(
-    PYXIS_TOOLS.filter((tool) => tool.name !== RESHAPED_ANSWER).map(
+    PYXIS_TOOLS.filter((tool) => !RESHAPED_ANSWERS.includes(tool.name)).map(
       (tool) => [tool.name, tool] as const,
     ),
   )('%s writes in the project time zone every instant its answer declares', (_name, tool) => {
@@ -254,6 +280,63 @@ describe('the tools against the API contract copied from pyxis-api', () => {
       expect(kinds.filter((kind) => !tool.description.includes(kind))).toEqual([]);
     },
   );
+
+  it('goals keeps every field of a goal the API lists or sums up, but its creation time', () => {
+    const goals = toolNamed(GOALS_TOOL);
+    const listed = resolved(contract.components.schemas.Goal ?? {});
+    const summed = resolved(answerOf(goals).properties?.goals?.items ?? {});
+    const fieldsOf = (schema: SchemaNode): string[] =>
+      Object.keys(schema.properties ?? {}).filter((key) => key !== GOAL_CREATION_TIME);
+    const goal = {
+      id: GOAL,
+      name: 'Sign-up',
+      type: 'event',
+      event: 'signup_completed',
+      path: null,
+      position: 1,
+      created_at: '2026-11-05T01:54:00.000Z',
+      conversions: 14,
+      converting_visits: 12,
+      conversion_rate: 0.1,
+    };
+    const report = goals.report({ visits: 120, goals: [goal] }, NOW) as {
+      readonly goals: readonly Readonly<Record<string, unknown>>[];
+    };
+
+    expect(instantPaths(answerOf(goals))).toEqual([`goals[].${GOAL_CREATION_TIME}`]);
+    expect(fieldsOf(summed)).toEqual(expect.arrayContaining(fieldsOf(listed)));
+    expect(Object.keys(report.goals[0] ?? {}).sort()).toEqual(fieldsOf(summed).sort());
+  });
+
+  it('read the goals summary in the shape goals expects', () => {
+    const ajv = new Ajv2020({ strict: false, allErrors: true });
+    addFormats.default(ajv);
+    ajv.addSchema(contract, 'openapi.json');
+    const validate = ajv.getSchema('openapi.json#/components/schemas/GoalsSummary');
+    const summary = {
+      visits: 0,
+      goals: [
+        {
+          id: GOAL,
+          name: 'Pricing',
+          type: 'page',
+          event: null,
+          path: '/pricing*',
+          position: 2,
+          created_at: '2026-11-05T01:54:00.000Z',
+          conversions: 0,
+          converting_visits: 0,
+          conversion_rate: null,
+        },
+      ],
+    };
+
+    expect(validate?.(summary), JSON.stringify(validate?.errors)).toBe(true);
+    expect(toolNamed(GOALS_TOOL).report(summary, NOW)).toMatchObject({
+      visits: 0,
+      goals: [{ id: GOAL, path: '/pricing*', conversion_rate: null }],
+    });
+  });
 
   it('read /v1/me in the shape list_projects expects', () => {
     const ajv = new Ajv2020({ strict: false, allErrors: true });

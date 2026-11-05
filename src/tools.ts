@@ -152,6 +152,12 @@ const campaignFilter = z
   .max(MAX_CAMPAIGN_LENGTH)
   .optional()
   .describe('The utm_campaign.');
+const reachedGoalFilter = z
+  .uuid()
+  .optional()
+  .describe(
+    'Only the visits that reached this goal, by its id from the goals tool: they sent its named event or viewed a page its path matches.',
+  );
 
 const funnelStep = z.discriminatedUnion('type', [
   z.object({
@@ -172,6 +178,15 @@ const funnelMode = z
   .enum(['visit', 'user'])
   .default('visit')
   .describe('visit counts each visit on its own; user follows identified people across visits.');
+
+function checkPropertyHasEvent(filters: {
+  readonly event?: string | undefined;
+  readonly property?: string | undefined;
+}): void {
+  if (filters.property !== undefined && filters.event === undefined) {
+    throw new ToolInputError('property filters the values of an event: give event too.');
+  }
+}
 
 function checkCityHasRegion(filters: {
   readonly city?: string | undefined;
@@ -205,6 +220,19 @@ const projectSchema = z.object({
 const meSchema = z.object({ projects: z.array(projectSchema) });
 const projectTimes = localTimes(['first_event_at', 'last_event_at']);
 
+const goalSummarySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+  event: z.string().nullable(),
+  path: z.string().nullable(),
+  position: z.number(),
+  conversions: z.number(),
+  converting_visits: z.number(),
+  conversion_rate: z.number().nullable(),
+});
+const goalsSummarySchema = z.object({ visits: z.number(), goals: z.array(goalSummarySchema) });
+
 export function todayIn(timezone: string, now: Date): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: knownTimeZoneOrUtc(timezone),
@@ -234,6 +262,11 @@ function projectsReport(body: unknown, now: Date): unknown {
   };
 }
 
+function goalsReport(body: unknown): unknown {
+  const parsed = goalsSummarySchema.safeParse(body);
+  return parsed.success ? parsed.data : undefined;
+}
+
 function rangeTool(name: string, title: string, segment: string, summary: string): PyxisTool {
   return defineTool({
     name,
@@ -250,7 +283,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     name: 'list_projects',
     title: 'List projects',
     description: withLocalTimes(
-      "The Pyxis projects this token can read, each with its id, name, time zone, today's date in that time zone, conversion event, and when its first and latest events arrived. Every other tool takes a project id from here and dates no later than the project's today.",
+      "The Pyxis projects this token can read, each with its id, name, time zone, today's date in that time zone, conversion event (the named event of its first goal, null when that goal is a page or there is none; the goals tool lists every goal), and when its first and latest events arrived. Every other tool takes a project id from here and dates no later than the project's today.",
     ),
     inputSchema: {},
     route: '/v1/me',
@@ -275,6 +308,60 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     'acquisition',
     'Visits per day and channel (paid, email, social, campaign, organic, referral, direct), and the sources and campaigns that brought them, with their conversions and ad clicks. A source is the campaign source, else the referring host; a visit with neither is (ad click) when it came from an ad click, such as one opened by an app that sends no referrer, and (direct) otherwise.',
   ),
+  defineTool({
+    name: 'goals',
+    title: 'Goals',
+    description: describeRangeTool(
+      "The goals of a project in their order, up to ten, each with its id, name, type (event or page), the named event or the page path that reaches it (a star in the path matches any characters) and its position, and over the range: conversions (the events or page views that reached it), converting_visits (the visits that reached it at least once) and conversion_rate (converting_visits divided by visits, from 0 to 1, null without visits). visits counts the visits of the range. The first goal (goal 1) is the one overview, devices and acquisition count as conversions; it started as the project's former conversion event. The ids here are what reached_goal takes. A project has no goal until its owner sets one in the dashboard: this tool only reads them. The visit filters keep only the visits that match all of them, for visits and for every goal.",
+    ),
+    inputSchema: {
+      ...rangeShape,
+      pages: pagesFilter,
+      event: eventName.optional().describe('Only the visits that sent this named event.'),
+      property: propertyFilter
+        .optional()
+        .describe('key=value: the event above carried this property value. Needs event.'),
+      channel: channelFilter,
+      device: deviceFilter,
+      browser: browserFilter,
+      os: osFilter,
+      identity: identityFilter,
+      country: countryFilter,
+      region: regionFilter,
+      city: cityFilter,
+      source: sourceFilter,
+      campaign: campaignFilter,
+      failed: z.boolean().optional().describe('true: only the visits with a failed request.'),
+      reached_goal: reachedGoalFilter,
+    },
+    route: projectRoute('goals/summary'),
+    request: (args) => {
+      checkPropertyHasEvent(args);
+      checkCityHasRegion(args);
+      return {
+        path: projectPath(args.project_id, 'goals/summary'),
+        query: {
+          ...rangeQuery(args),
+          path: args.pages,
+          event: args.event,
+          property: args.property,
+          channel: args.channel,
+          device: args.device,
+          browser: args.browser,
+          os: args.os,
+          identity: args.identity,
+          country: args.country,
+          region: args.region,
+          city: args.city,
+          source: args.source,
+          campaign: args.campaign,
+          failed: args.failed,
+          reached_goal: args.reached_goal,
+        },
+      };
+    },
+    report: goalsReport,
+  }),
   rangeTool(
     'engagement',
     'Engagement',
@@ -511,9 +598,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     route: projectRoute('visits'),
     instants: ['visits[].started_at', 'visits[].ended_at'],
     request: (args) => {
-      if (args.property !== undefined && args.event === undefined) {
-        throw new ToolInputError('property filters the values of an event: give event too.');
-      }
+      checkPropertyHasEvent(args);
       checkCityHasRegion(args);
       return {
         path: projectPath(args.project_id, 'visits'),
@@ -581,7 +666,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     name: 'project_settings',
     title: 'Project settings',
     description: withLocalTimes(
-      "The settings of one project: time zone, conversion event, allowed origins, first and latest event, how many months events are kept, whether the visitor's approximate city is kept, whether unique visitors are counted, the live public keys, and when each live secret key was created (never the secret key itself).",
+      "The settings of one project: time zone, conversion event (the named event of its first goal; the goals tool lists every goal), allowed origins, first and latest event, how many months events are kept, whether the visitor's approximate city is kept, whether unique visitors are counted, the live public keys, and when each live secret key was created (never the secret key itself).",
     ),
     inputSchema: { project_id: projectId },
     route: projectRoute('settings'),

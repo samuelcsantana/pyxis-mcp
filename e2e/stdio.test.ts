@@ -5,6 +5,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
   environment,
+  GOAL,
   PROJECT,
   READING_TIME,
   startFakeApi,
@@ -67,7 +68,7 @@ describe('pyxis-mcp over stdio', () => {
       arguments: { project_id: PROJECT, from: '2026-10-08', to: '2026-10-14' },
     });
 
-    expect(tools).toHaveLength(16);
+    expect(tools).toHaveLength(17);
     expect(JSON.parse(textOf(projects))).toMatchObject({
       report: { projects: [{ id: PROJECT, name: 'Shop', timezone: 'UTC' }] },
     });
@@ -104,6 +105,45 @@ describe('pyxis-mcp over stdio', () => {
     expect(JSON.parse(textOf(result))).toMatchObject({ report: READING_TIME });
     expect(api.seen.map((request) => request.url)).toEqual([
       `/v1/projects/${PROJECT}/features/properties/summary?from=2026-10-08&to=2026-10-14&name=article_read_100&key=seconds&by=post&source=google`,
+    ]);
+  });
+
+  it('sums up the goals of a range without their creation time, sending the filters it was given', async () => {
+    const { client } = await startClient({ PYXIS_TOKEN: TOKEN, PYXIS_API_URL: api.url });
+
+    const result = await client.callTool({
+      name: 'goals',
+      arguments: {
+        project_id: PROJECT,
+        from: '2026-10-08',
+        to: '2026-10-14',
+        channel: 'organic',
+        reached_goal: GOAL,
+      },
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(JSON.parse(textOf(result))).toEqual({
+      untrusted_visitor_text: expect.any(String) as string,
+      report: {
+        visits: 40,
+        goals: [
+          {
+            id: GOAL,
+            name: 'Sign-up',
+            type: 'event',
+            event: 'signup_completed',
+            path: null,
+            position: 1,
+            conversions: 6,
+            converting_visits: 5,
+            conversion_rate: 0.125,
+          },
+        ],
+      },
+    });
+    expect(api.seen.map((request) => request.url)).toEqual([
+      `/v1/projects/${PROJECT}/goals/summary?from=2026-10-08&to=2026-10-14&channel=organic&reached_goal=${GOAL}`,
     ]);
   });
 

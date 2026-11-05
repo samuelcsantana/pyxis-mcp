@@ -29,6 +29,24 @@ export const READING_TIME = {
   ],
   other_count: 0,
 };
+export const GOAL = '7c1e2d3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f';
+export const GOALS_SUMMARY = {
+  visits: 40,
+  goals: [
+    {
+      id: GOAL,
+      name: 'Sign-up',
+      type: 'event',
+      event: 'signup_completed',
+      path: null,
+      position: 1,
+      created_at: '2026-11-05T01:54:00.000Z',
+      conversions: 6,
+      converting_visits: 5,
+      conversion_rate: 0.125,
+    },
+  ],
+};
 export const VISITORS = {
   enabled: true,
   daily: [
@@ -91,6 +109,10 @@ function answer(seen: SeenRequest[], request: IncomingMessage, response: ServerR
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/features/properties/summary?`) === true) {
     send(200, READING_TIME);
+    return;
+  }
+  if (request.url?.startsWith(`/v1/projects/${PROJECT}/goals/summary?`) === true) {
+    send(200, GOALS_SUMMARY);
     return;
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/timeline?`) === true) {
