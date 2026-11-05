@@ -56,23 +56,27 @@ dashboard; with a project that has received no event, the site does not run the 
 
 | Tool               | What it answers                                                                                                                                                  |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `list_projects`    | The projects the token can read: id, name, time zone, today there, conversion event, first and last event                                                        |
-| `overview`         | Visits, unique visitors, identified users, conversions of a chosen goal, failed writes vs. last period; top pages, events                                        |
+| `list_projects`    | The projects the token can read: id, name, time zone, today there, conversion event, currency, first and last event                                              |
+| `overview`         | Visits, unique visitors, identified users, conversions and revenue of a chosen goal, failed writes vs. last period; top pages, events                            |
 | `devices`          | Visits and conversions of a chosen goal by device type, browser, system, country, region and city; the reach of the range                                        |
-| `acquisition`      | Visits per day and channel, and the sources and campaigns behind them, with the conversions of a chosen goal                                                     |
-| `goals`            | Every goal of the project with its conversions, converting visits and rate over a range; the ids the other tools take                                            |
+| `acquisition`      | Visits per day and channel, each channel's totals, and the sources and campaigns behind them, with the conversions and revenue of a chosen goal                  |
+| `goals`            | Every goal of the project with its conversions, converting visits, rate and revenue over a range; the ids the other tools take                                   |
 | `engagement`       | Entry and exit pages, single-page visits, visit length                                                                                                           |
 | `time_of_day`      | Visits by weekday and local hour                                                                                                                                 |
 | `features`         | The most used named events or screens, day by day                                                                                                                |
 | `event_properties` | How the property values of one named event break down                                                                                                            |
 | `property_summary` | The median and quartiles of a numeric property, split by another: how long people read each article                                                              |
 | `requests`         | Calls to the site's backend per route: failures, statuses, durations, latest errors                                                                              |
-| `funnel`           | How many visits or people reached each step, and the time between steps                                                                                          |
+| `funnel`           | How many visits or people reached each step, the time between steps, and the revenue of each event step                                                          |
 | `funnel_segments`  | The same funnel per device type or channel                                                                                                                       |
 | `funnel_subjects`  | The visits or people who reached, or dropped at, one step                                                                                                        |
 | `visits`           | The visits of a range, filtered by pages, events, channel, device, place, campaign, goal reached, failed requests or unique visitors; each with its visitor kind |
 | `visit_timeline`   | Every event of one visit, or every visit of one identified person                                                                                                |
-| `project_settings` | Time zone, conversion event, allowed origins, retention, whether the city is kept, live public keys                                                              |
+| `project_settings` | Time zone, conversion event, currency, allowed origins, retention, whether the city is kept, live public keys                                                    |
+
+Revenue is the sum of the numeric `revenue` property the site sends on a goal's events, or on the
+event that completes a funnel step, in the project's currency and as sent: nothing is converted
+between currencies, and a page goal or page step has none (`null`).
 
 A result is JSON text, `{ "untrusted_visitor_text": "…", "report": … }`: the report is the API's
 answer, and the first field reminds the agent that names, paths and values inside it were written by
