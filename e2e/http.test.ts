@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
   environment,
   PROJECT,
+  REVENUE,
   startFakeApi,
   textOf,
   TIMELINE,
@@ -108,7 +109,11 @@ describe('pyxis-mcp as a library behind an HTTP host', () => {
       report: { projects: [{ id: PROJECT, name: 'Shop', timezone: 'UTC', currency: 'BRL' }] },
     });
     expect(JSON.parse(textOf(overview))).toMatchObject({
-      report: { visits: { current: 12, previous: 9 }, visitors: VISITORS },
+      report: {
+        visits: { current: 12, previous: 9 },
+        kpis: { revenue: REVENUE },
+        visitors: VISITORS,
+      },
     });
     expect(api.seen.map((request) => request.url)).toEqual([
       '/v1/me',

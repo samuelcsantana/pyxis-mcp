@@ -15,7 +15,7 @@ export const GOAL_NOTE =
   "Conversions count one goal: the one goal names, by its id from the goals tool, or else the first goal (goal 1), which started as the project's former conversion event; they are null when the project has no goal.";
 
 export const REVENUE_NOTE =
-  "Revenue is the sum of the numeric revenue property the site sent on those events, in the project's currency (currency in list_projects and project_settings) and as sent: changing the currency or sending amounts in another one converts nothing.";
+  "Revenue is a sum of the numeric revenue property the site sent on events, in the project's currency (currency in list_projects and project_settings) and as sent: changing the currency or sending amounts in another one converts nothing.";
 
 const RANGE_RULES =
   "The project id and the project's today come from list_projects. Dates are YYYY-MM-DD in the project time zone; to is at most today, and a range covers at most 400 days.";
@@ -323,7 +323,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     'overview',
     'Overview',
     'overview',
-    "Visits, identified users, conversions and failed writes of a range against the previous period, the daily activity of both, and the top pages and events. A range that ends today is compared with the previous period up to the same time of day. visitors holds the unique visitors, counted without any identifier and only for a project that counts them (visitors.enabled, visitors_enabled in project_settings); when enabled is false every list is empty. The first event of each visit says whether its browser is new (first_visit), back for the first time this month (first_this_month) or today (first_today), or back again today (again_today); a visit without that mark never counts. daily holds those four counts per day: the unique visitors of a day are first_visit + first_this_month + first_today, and the new ones are first_visit. months holds, per calendar month the range touches, first_visit and first_this_month on the range's days of that month, and exact: their sum is the month's unique visitors only when exact is true, as when the range holds the whole month or runs from its 1st to today. previous_daily and previous_months hold the same for the previous period. Days do not add up to unique visitors: a browser back on two days counts on both. A visitor is a browser: two devices count as two, and a browser whose storage was cleared counts as new.",
+    `Visits, identified users, conversions, revenue and failed writes of a range against the previous period, the daily activity of both, and the top pages and events. revenue holds current, previous and daily: the revenue of the events counted as conversions, null when the goal counted is a page or the project has no goal. ${REVENUE_NOTE} A range that ends today is compared with the previous period up to the same time of day. visitors holds the unique visitors, counted without any identifier and only for a project that counts them (visitors.enabled, visitors_enabled in project_settings); when enabled is false every list is empty. The first event of each visit says whether its browser is new (first_visit), back for the first time this month (first_this_month) or today (first_today), or back again today (again_today); a visit without that mark never counts. daily holds those four counts per day: the unique visitors of a day are first_visit + first_this_month + first_today, and the new ones are first_visit. months holds, per calendar month the range touches, first_visit and first_this_month on the range's days of that month, and exact: their sum is the month's unique visitors only when exact is true, as when the range holds the whole month or runs from its 1st to today. previous_daily and previous_months hold the same for the previous period. Days do not add up to unique visitors: a browser back on two days counts on both. A visitor is a browser: two devices count as two, and a browser whose storage was cleared counts as new.`,
   ),
   goalTool(
     'devices',
@@ -335,7 +335,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     'acquisition',
     'Acquisition',
     'acquisition',
-    'Visits per day and channel (paid, email, social, campaign, organic, referral, direct), and the sources and campaigns that brought them, with their conversions and ad clicks. A source is the campaign source, else the referring host; a visit with neither is (ad click) when it came from an ad click, such as one opened by an app that sends no referrer, and (direct) otherwise.',
+    `Visits per day and channel (paid, email, social, campaign, organic, referral, direct), the totals of each channel over the range (channels, every channel in that order), and the sources and campaigns that brought them, with their conversions, ad clicks and revenue. The revenue of a channel, source or campaign is that of the conversions made by the visits that entered through it, null when the goal counted is a page or the project has no goal. ${REVENUE_NOTE} A source is the campaign source, else the referring host; a visit with neither is (ad click) when it came from an ad click, such as one opened by an app that sends no referrer, and (direct) otherwise.`,
   ),
   defineTool({
     name: 'goals',
@@ -530,7 +530,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     name: 'funnel',
     title: 'Funnel',
     description: describeRangeTool(
-      'How many visits or people reached each step of a funnel, in order, with the median time from each step to the next and through the whole funnel.',
+      `How many visits or people reached each step of a funnel, in order, with the median time from each step to the next and through the whole funnel. Each event step also has its revenue: that of the event that completed the step for each visit or person, its first one after the previous step, so later ones add nothing; null for a page step. ${REVENUE_NOTE}`,
     ),
     inputSchema: { ...rangeShape, mode: funnelMode, steps: funnelSteps },
     route: projectRoute('funnel'),
