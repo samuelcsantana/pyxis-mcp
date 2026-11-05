@@ -343,6 +343,42 @@ describe('the range tools', () => {
   });
 });
 
+describe('revenue', () => {
+  it('sums in overview the events counted as conversions, null without an event goal', () => {
+    const description = tool('overview').description;
+
+    expect(description).toContain('revenue holds current, previous and daily');
+    expect(description).toContain(
+      'null when the goal counted is a page or the project has no goal',
+    );
+  });
+
+  it('sums in acquisition the conversions of each channel, source and campaign', () => {
+    const description = tool('acquisition').description;
+
+    expect(description).toContain('the totals of each channel over the range (channels');
+    expect(description).toContain('The revenue of a channel, source or campaign');
+  });
+
+  it('sums in funnel only the event that completed each event step', () => {
+    const description = tool('funnel').description;
+
+    expect(description).toContain('its first one after the previous step');
+    expect(description).toContain('null for a page step');
+  });
+
+  it('says revenue is in the project currency and that nothing is converted', () => {
+    expect(REVENUE_NOTE).toContain("in the project's currency");
+    expect(REVENUE_NOTE).toContain('converts nothing');
+  });
+
+  it('passes it through as the API answers it', () => {
+    const body = { kpis: { revenue: { current: 1748.6, previous: 0, daily: [0, 1748.6] } } };
+
+    expect(tool('overview').report(body, NOW)).toEqual(body);
+  });
+});
+
 describe("the visitor's approximate city", () => {
   it('lists the cities devices answers, kept only where the owner turned the city on', () => {
     const description = tool('devices').description;

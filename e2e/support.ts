@@ -59,6 +59,7 @@ export const VISITORS = {
   ],
   previous_months: [{ month: '2026-10', first_visit: 6, first_this_month: 4, exact: false }],
 };
+export const REVENUE = { current: 749.4, previous: 120, daily: [0, 749.4] };
 export const ME = {
   email: 'owner@example.com',
   projects: [
@@ -106,7 +107,11 @@ function answer(seen: SeenRequest[], request: IncomingMessage, response: ServerR
     return;
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/overview?`) === true) {
-    send(200, { visits: { current: 12, previous: 9 }, visitors: VISITORS });
+    send(200, {
+      visits: { current: 12, previous: 9 },
+      kpis: { revenue: REVENUE },
+      visitors: VISITORS,
+    });
     return;
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/features/properties/summary?`) === true) {

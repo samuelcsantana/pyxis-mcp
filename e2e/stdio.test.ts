@@ -8,6 +8,7 @@ import {
   GOAL,
   PROJECT,
   READING_TIME,
+  REVENUE,
   startFakeApi,
   textOf,
   TOKEN,
@@ -73,7 +74,11 @@ describe('pyxis-mcp over stdio', () => {
       report: { projects: [{ id: PROJECT, name: 'Shop', timezone: 'UTC', currency: 'BRL' }] },
     });
     expect(JSON.parse(textOf(overview))).toMatchObject({
-      report: { visits: { current: 12, previous: 9 }, visitors: VISITORS },
+      report: {
+        visits: { current: 12, previous: 9 },
+        kpis: { revenue: REVENUE },
+        visitors: VISITORS,
+      },
     });
     expect(api.seen.map((request) => request.url)).toEqual([
       '/v1/me',

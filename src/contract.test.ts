@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { default as addFormats } from 'ajv-formats';
 import { describe, expect, it } from 'vitest';
-import { PYXIS_TOOLS, type PyxisTool } from './tools.js';
+import { PYXIS_TOOLS, type PyxisTool, REVENUE_NOTE } from './tools.js';
 
 const CONTRACT_FILE = 'contract/openapi.json';
 const ACCESS_TOKEN_SCHEME = 'access_token';
@@ -19,6 +19,7 @@ const GOAL_CHOICE = 'goal';
 const GOAL_FILTER = 'reached_goal';
 const PROJECT_SETTINGS = 'project_settings';
 const CURRENCY = 'currency';
+const REVENUE = 'revenue';
 const VISIT_FILTER = 'channel';
 const PROJECT = '2b2b2b2b-0000-4000-8000-000000000002';
 const GOAL = '7c1e2d3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f';
@@ -190,6 +191,17 @@ function instantPaths(node: SchemaNode, path = ''): string[] {
   );
   const items = schema.items === undefined ? [] : instantPaths(schema.items, `${path}[]`);
   const options = (schema.anyOf ?? []).flatMap((option) => instantPaths(option, path));
+  return [...fields, ...items, ...options].sort();
+}
+
+function fieldPaths(node: SchemaNode, key: string, path = ''): string[] {
+  const schema = resolved(node);
+  const fields = Object.entries(schema.properties ?? {}).flatMap(([name, child]) => {
+    const at = path === '' ? name : `${path}.${name}`;
+    return [...(name === key ? [at] : []), ...fieldPaths(child, key, at)];
+  });
+  const items = schema.items === undefined ? [] : fieldPaths(schema.items, key, `${path}[]`);
+  const options = (schema.anyOf ?? []).flatMap((option) => fieldPaths(option, key, path));
   return [...fields, ...items, ...options].sort();
 }
 
@@ -379,6 +391,24 @@ describe('the tools against the API contract copied from pyxis-api', () => {
       expect(tool.description).toContain(`${CURRENCY} (the ISO 4217 code`);
     },
   );
+
+  it('say what revenue sums, and in which currency, in every tool whose answer carries it', () => {
+    const summing = PYXIS_TOOLS.filter((tool) => fieldPaths(answerOf(tool), REVENUE).length > 0);
+    const describing = PYXIS_TOOLS.filter((tool) => tool.description.includes(REVENUE_NOTE));
+
+    expect(summing.map((tool) => tool.name)).toEqual([
+      'overview',
+      'acquisition',
+      'goals',
+      'funnel',
+    ]);
+    expect(describing).toEqual(summing);
+    expect(fieldPaths(answerOf(toolNamed('acquisition')), REVENUE)).toEqual([
+      'campaigns[].revenue',
+      'channels[].revenue',
+      'sources[].revenue',
+    ]);
+  });
 
   it('read /v1/me in the shape list_projects expects', () => {
     const ajv = new Ajv2020({ strict: false, allErrors: true });
