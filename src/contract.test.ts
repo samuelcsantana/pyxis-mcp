@@ -16,6 +16,8 @@ const DASHBOARD_ONLY_ROUTES: readonly string[] = ['/v1/projects/{projectId}/arri
 const GOAL_LIST_ROUTE = '/v1/projects/{projectId}/goals';
 const GOAL_CREATION_TIME = 'created_at';
 const GOAL_CHOICE = 'goal';
+const GOAL_FILTER = 'reached_goal';
+const VISIT_FILTER = 'channel';
 const PROJECT = '2b2b2b2b-0000-4000-8000-000000000002';
 const GOAL = '7c1e2d3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f';
 const NOW = new Date('2026-11-05T12:00:00.000Z');
@@ -106,6 +108,7 @@ const EVERY_ARGUMENT: Readonly<Record<string, Record<string, unknown>>> = {
     source: 'google',
     campaign: 'launch',
     failed: true,
+    reached_goal: GOAL,
   },
   requests: { ...RANGE, kind: 'reads', screen: '/orders', route: 'GET /orders/:id' },
   funnel: { ...RANGE, mode: 'user', steps: STEPS },
@@ -133,6 +136,7 @@ const EVERY_ARGUMENT: Readonly<Record<string, Record<string, unknown>>> = {
     campaign: 'launch',
     route: 'POST /orders',
     failed: false,
+    reached_goal: GOAL,
     cursor: 'next-page',
   },
   visit_timeline: { project_id: PROJECT, session_id: VISIT, before: '2026-10-12T10:00:00.000Z' },
@@ -316,6 +320,18 @@ describe('the tools against the API contract copied from pyxis-api', () => {
 
     expect(counting.map((tool) => tool.name)).toEqual(['overview', 'devices', 'acquisition']);
     expect(counting.every((tool) => GOAL_CHOICE in tool.inputSchema)).toBe(true);
+  });
+
+  it('let every tool that takes the visit filters keep the visits that reached a goal', () => {
+    const filtering = PYXIS_TOOLS.filter((tool) => VISIT_FILTER in tool.inputSchema);
+
+    expect(filtering.map((tool) => tool.name)).toEqual(['goals', 'property_summary', 'visits']);
+    expect(filtering.every((tool) => GOAL_FILTER in tool.inputSchema)).toBe(true);
+    expect(
+      filtering.every((tool) =>
+        (operationOf(tool).parameters ?? []).some((item) => item.name === GOAL_FILTER),
+      ),
+    ).toBe(true);
   });
 
   it('read the goals summary in the shape goals expects', () => {

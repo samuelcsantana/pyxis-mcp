@@ -478,6 +478,7 @@ describe('property_summary', () => {
       source: 'google',
       campaign: 'launch',
       failed: true,
+      reached_goal: GOAL,
     }).query;
 
     expect(query).toEqual({
@@ -499,6 +500,7 @@ describe('property_summary', () => {
       source: 'google',
       campaign: 'launch',
       failed: true,
+      reached_goal: GOAL,
     });
   });
 
@@ -636,6 +638,7 @@ describe('visits', () => {
       route: 'POST /orders',
       visitors: 'day',
       failed: true,
+      reached_goal: GOAL,
       cursor: 'next-page',
     }).query;
 
@@ -656,6 +659,7 @@ describe('visits', () => {
       route: 'POST /orders',
       visitors: 'day',
       failed: true,
+      reached_goal: GOAL,
       cursor: 'next-page',
     });
   });
@@ -698,6 +702,7 @@ describe('visits', () => {
     [{ region: 'SP' }, 'region'],
     [{ region: 'BR-SP', city: 'C'.repeat(101) }, 'city'],
     [{ channel: 'tv' }, 'channel'],
+    [{ reached_goal: 'signup' }, 'reached_goal'],
   ])('refuses the filter %j', (filter, field) => {
     expect(inputProblem('visits', { ...RANGE, ...filter })).toContain(field);
   });
