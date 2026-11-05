@@ -463,6 +463,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
       source: sourceFilter,
       campaign: campaignFilter,
       failed: z.boolean().optional().describe('true: only the visits with a failed request.'),
+      reached_goal: reachedGoalFilter,
     },
     route: projectRoute('features/properties/summary'),
     request: (args) => {
@@ -493,6 +494,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
           source: args.source,
           campaign: args.campaign,
           failed: args.failed,
+          reached_goal: args.reached_goal,
         },
       };
     },
@@ -616,6 +618,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
         .boolean()
         .optional()
         .describe('true: the visit had a failed request; with route, on that route.'),
+      reached_goal: reachedGoalFilter,
       cursor: cursor.optional().describe('The next_cursor of the previous page.'),
     },
     route: projectRoute('visits'),
@@ -641,6 +644,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
           route: args.route,
           visitors: args.visitors,
           failed: args.failed,
+          reached_goal: args.reached_goal,
           cursor: args.cursor,
         },
       };
