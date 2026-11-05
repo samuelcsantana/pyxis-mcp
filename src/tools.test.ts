@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
+  GOAL_NOTE,
   LOCAL_TIMES_NOTE,
   PYXIS_TOOLS,
   type PyxisTool,
@@ -11,6 +12,7 @@ import {
 
 const PROJECT = '2b2b2b2b-0000-4000-8000-000000000002';
 const VISIT = '5d2f8c1a-6b3e-4a7f-9c0d-1e2f3a4b5c6d';
+const GOAL = '7c1e2d3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f';
 const RANGE = { project_id: PROJECT, from: '2026-10-08', to: '2026-10-14' };
 const STEPS = [
   { type: 'page', path: '/pricing' },
@@ -290,6 +292,29 @@ describe('the range tools', () => {
       path: `/v1/projects/${PROJECT}/${segment}`,
       query: { from: '2026-10-08', to: '2026-10-14' },
     });
+  });
+
+  it.each([
+    ['overview', 'overview'],
+    ['devices', 'devices'],
+    ['acquisition', 'acquisition'],
+  ])('%s counts the goal it is given as conversions', (name, segment) => {
+    expect(tool(name).request({ ...RANGE, goal: GOAL })).toEqual({
+      path: `/v1/projects/${PROJECT}/${segment}`,
+      query: { from: '2026-10-08', to: '2026-10-14', goal: GOAL },
+    });
+  });
+
+  it('says which goal the conversions count, the first one unless told', () => {
+    const counting = PYXIS_TOOLS.filter((candidate) => candidate.description.includes(GOAL_NOTE));
+
+    expect(counting.map((candidate) => candidate.name)).toEqual([
+      'overview',
+      'devices',
+      'acquisition',
+    ]);
+    expect(GOAL_NOTE).toContain('or else the first goal (goal 1)');
+    expect(inputProblem('overview', { ...RANGE, goal: '1' })).toContain('goal');
   });
 
   it('passes the report through as the API answers it', () => {
