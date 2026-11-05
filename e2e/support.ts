@@ -67,6 +67,7 @@ export const ME = {
       name: 'Shop',
       timezone: 'UTC',
       conversion_event: 'signup_completed',
+      currency: 'BRL',
       first_event_at: '2026-09-01T10:00:00.000Z',
       last_event_at: '2026-10-14T10:00:00.000Z',
       icon_version: null,

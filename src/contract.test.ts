@@ -17,6 +17,8 @@ const GOAL_LIST_ROUTE = '/v1/projects/{projectId}/goals';
 const GOAL_CREATION_TIME = 'created_at';
 const GOAL_CHOICE = 'goal';
 const GOAL_FILTER = 'reached_goal';
+const PROJECT_SETTINGS = 'project_settings';
+const CURRENCY = 'currency';
 const VISIT_FILTER = 'channel';
 const PROJECT = '2b2b2b2b-0000-4000-8000-000000000002';
 const GOAL = '7c1e2d3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f';
@@ -366,6 +368,18 @@ describe('the tools against the API contract copied from pyxis-api', () => {
     });
   });
 
+  it.each([RESHAPED_ANSWER, PROJECT_SETTINGS])(
+    '%s names the currency of the revenue, which the API answers for every project',
+    (name) => {
+      const tool = toolNamed(name);
+      const answer = answerOf(tool);
+      const project = resolved(answer.properties?.projects?.items ?? answer);
+
+      expect(project.required).toContain(CURRENCY);
+      expect(tool.description).toContain(`${CURRENCY} (the ISO 4217 code`);
+    },
+  );
+
   it('read /v1/me in the shape list_projects expects', () => {
     const ajv = new Ajv2020({ strict: false, allErrors: true });
     addFormats.default(ajv);
@@ -397,7 +411,12 @@ describe('the tools against the API contract copied from pyxis-api', () => {
     expect(instants).toContain('projects[].last_event_at');
     expect(projectsTool?.report(me, new Date('2026-10-14T12:00:00.000Z'))).toMatchObject({
       projects: [
-        { id: PROJECT, today: '2026-10-14', first_event_at: '2026-10-01T09:00:00.000-03:00' },
+        {
+          id: PROJECT,
+          today: '2026-10-14',
+          currency: 'BRL',
+          first_event_at: '2026-10-01T09:00:00.000-03:00',
+        },
       ],
     });
   });

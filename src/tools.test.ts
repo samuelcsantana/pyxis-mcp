@@ -113,6 +113,7 @@ describe('list_projects', () => {
           name: 'Shop',
           timezone: 'America/Sao_Paulo',
           conversion_event: 'signup_completed',
+          currency: 'BRL',
           first_event_at: '2026-09-01T10:00:00.000Z',
           last_event_at: '2026-10-15T01:00:00.000Z',
           icon_version: 'abc123',
@@ -122,6 +123,7 @@ describe('list_projects', () => {
           name: 'Docs',
           timezone: 'UTC',
           conversion_event: null,
+          currency: 'USD',
           first_event_at: null,
           last_event_at: null,
           icon_version: null,
@@ -137,6 +139,7 @@ describe('list_projects', () => {
           timezone: 'America/Sao_Paulo',
           today: '2026-10-14',
           conversion_event: 'signup_completed',
+          currency: 'BRL',
           first_event_at: '2026-09-01T07:00:00.000-03:00',
           last_event_at: '2026-10-14T22:00:00.000-03:00',
         },
@@ -146,11 +149,18 @@ describe('list_projects', () => {
           timezone: 'UTC',
           today: '2026-10-15',
           conversion_event: null,
+          currency: 'USD',
           first_event_at: null,
           last_event_at: null,
         },
       ],
     });
+  });
+
+  it('names the currency each project counts its revenue in', () => {
+    expect(tool('list_projects').description).toContain(
+      'currency (the ISO 4217 code, such as BRL, that its revenue is counted in)',
+    );
   });
 
   it('answers nothing for a body it does not recognize', () => {
@@ -928,5 +938,12 @@ describe('project_settings', () => {
       path: `/v1/projects/${PROJECT}/settings`,
       query: {},
     });
+  });
+
+  it('says the currency only labels the revenue, so changing it converts nothing', () => {
+    const description = tool('project_settings').description;
+
+    expect(description).toContain('currency (the ISO 4217 code, such as BRL');
+    expect(description).toContain('changing it converts nothing');
   });
 });
