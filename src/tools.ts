@@ -14,6 +14,9 @@ export const LOCAL_TIMES_NOTE =
 export const GOAL_NOTE =
   "Conversions count one goal: the one goal names, by its id from the goals tool, or else the first goal (goal 1), which started as the project's former conversion event; they are null when the project has no goal.";
 
+export const REVENUE_NOTE =
+  "Revenue is the sum of the numeric revenue property the site sent on those events, in the project's currency (currency in list_projects and project_settings) and as sent: changing the currency or sending amounts in another one converts nothing.";
+
 const RANGE_RULES =
   "The project id and the project's today come from list_projects. Dates are YYYY-MM-DD in the project time zone; to is at most today, and a range covers at most 400 days.";
 
@@ -239,6 +242,7 @@ const goalSummarySchema = z.object({
   conversions: z.number(),
   converting_visits: z.number(),
   conversion_rate: z.number().nullable(),
+  revenue: z.number().nullable(),
 });
 const goalsSummarySchema = z.object({ visits: z.number(), goals: z.array(goalSummarySchema) });
 
@@ -335,7 +339,7 @@ export const PYXIS_TOOLS: readonly PyxisTool[] = [
     name: 'goals',
     title: 'Goals',
     description: describeRangeTool(
-      "The goals of a project in their order, up to ten, each with its id, name, type (event or page), the named event or the page path that reaches it (a star in the path matches any characters) and its position, and over the range: conversions (the events or page views that reached it), converting_visits (the visits that reached it at least once) and conversion_rate (converting_visits divided by visits, from 0 to 1, null without visits). visits counts the visits of the range. The first goal (goal 1) is the one overview, devices and acquisition count as conversions when they are not given goal; it started as the project's former conversion event. The ids here are what goal and reached_goal take. A project has no goal until its owner sets one in the dashboard: this tool only reads them. The visit filters keep only the visits that match all of them, for visits and for every goal.",
+      `The goals of a project in their order, up to ten, each with its id, name, type (event or page), the named event or the page path that reaches it (a star in the path matches any characters) and its position, and over the range: conversions (the events or page views that reached it), converting_visits (the visits that reached it at least once), conversion_rate (converting_visits divided by visits, from 0 to 1, null without visits) and revenue (summed over the events of an event goal; null for a page goal, whose page views carry none). ${REVENUE_NOTE} visits counts the visits of the range. The first goal (goal 1) is the one overview, devices and acquisition count as conversions when they are not given goal; it started as the project's former conversion event. The ids here are what goal and reached_goal take. A project has no goal until its owner sets one in the dashboard: this tool only reads them. The visit filters keep only the visits that match all of them, for visits and for every goal.`,
     ),
     inputSchema: {
       ...rangeShape,
