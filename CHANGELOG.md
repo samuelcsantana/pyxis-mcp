@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.9.0...v0.10.0) (2026-11-05)
+
+
+### Features
+
+* **tools:** keep the revenue of each goal in the goals answer ([5c93203](https://github.com/samuelcsantana/pyxis-mcp/commit/5c932031ddfb4242dbe099cd114623dea65fb96f))
+* **tools:** name each project's currency in list_projects and project_settings ([6250d52](https://github.com/samuelcsantana/pyxis-mcp/commit/6250d52155419fb4e84ce631436ee868bf3fa1fc))
+* **tools:** say what revenue sums in overview, acquisition and funnel ([f1d5879](https://github.com/samuelcsantana/pyxis-mcp/commit/f1d58790a5786113c9000c5de8c00c9eef0fd9dd))
+
+
+### Documentation
+
+* **readme:** revenue and the project currency in the tools table ([071a294](https://github.com/samuelcsantana/pyxis-mcp/commit/071a29425255a317a201989e50ddf4da89401fa0))
+
 ## [0.9.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.8.0...v0.9.0) (2026-11-05)
 
 
