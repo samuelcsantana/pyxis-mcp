@@ -44,6 +44,7 @@ export const GOALS_SUMMARY = {
       conversions: 6,
       converting_visits: 5,
       conversion_rate: 0.125,
+      revenue: 749.4,
     },
   ],
 };

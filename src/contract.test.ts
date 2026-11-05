@@ -303,6 +303,7 @@ describe('the tools against the API contract copied from pyxis-api', () => {
       conversions: 14,
       converting_visits: 12,
       conversion_rate: 0.1,
+      revenue: 1748.6,
     };
     const report = goals.report({ visits: 120, goals: [goal] }, NOW) as {
       readonly goals: readonly Readonly<Record<string, unknown>>[];
@@ -353,6 +354,7 @@ describe('the tools against the API contract copied from pyxis-api', () => {
           conversions: 0,
           converting_visits: 0,
           conversion_rate: null,
+          revenue: null,
         },
       ],
     };
@@ -360,7 +362,7 @@ describe('the tools against the API contract copied from pyxis-api', () => {
     expect(validate?.(summary), JSON.stringify(validate?.errors)).toBe(true);
     expect(toolNamed(GOALS_TOOL).report(summary, NOW)).toMatchObject({
       visits: 0,
-      goals: [{ id: GOAL, path: '/pricing*', conversion_rate: null }],
+      goals: [{ id: GOAL, path: '/pricing*', conversion_rate: null, revenue: null }],
     });
   });
 
@@ -377,6 +379,7 @@ describe('the tools against the API contract copied from pyxis-api', () => {
           name: 'Shop',
           timezone: 'America/Sao_Paulo',
           conversion_event: null,
+          currency: 'BRL',
           first_event_at: '2026-10-01T12:00:00.000Z',
           last_event_at: null,
           icon_version: null,

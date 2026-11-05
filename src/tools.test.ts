@@ -5,6 +5,7 @@ import {
   LOCAL_TIMES_NOTE,
   PYXIS_TOOLS,
   type PyxisTool,
+  REVENUE_NOTE,
   ToolInputError,
   todayIn,
   VISITOR_TEXT_NOTE,
@@ -788,7 +789,14 @@ describe('goals', () => {
     expect(description).toContain('this tool only reads them');
   });
 
-  it('keeps each goal with its numbers, in order, without its creation time', () => {
+  it("sums each event goal's revenue in the project currency, converting nothing", () => {
+    const description = tool('goals').description;
+
+    expect(description).toContain(REVENUE_NOTE);
+    expect(description).toContain('null for a page goal');
+  });
+
+  it('keeps each goal with its numbers and revenue, in order, without its creation time', () => {
     const body = {
       visits: 120,
       goals: [
@@ -803,6 +811,7 @@ describe('goals', () => {
           conversions: 14,
           converting_visits: 12,
           conversion_rate: 0.1,
+          revenue: 1748.6,
         },
         {
           id: PRICING_GOAL,
@@ -815,6 +824,7 @@ describe('goals', () => {
           conversions: 30,
           converting_visits: 24,
           conversion_rate: 0.2,
+          revenue: null,
         },
       ],
     };
@@ -832,6 +842,7 @@ describe('goals', () => {
           conversions: 14,
           converting_visits: 12,
           conversion_rate: 0.1,
+          revenue: 1748.6,
         },
         {
           id: PRICING_GOAL,
@@ -843,6 +854,7 @@ describe('goals', () => {
           conversions: 30,
           converting_visits: 24,
           conversion_rate: 0.2,
+          revenue: null,
         },
       ],
     });
@@ -863,6 +875,7 @@ describe('goals', () => {
       conversions: 0,
       converting_visits: 0,
       conversion_rate: null,
+      revenue: 0,
     };
 
     expect(tool('goals').report({ visits: 0, goals: [quiet] }, NOW)).toEqual({
