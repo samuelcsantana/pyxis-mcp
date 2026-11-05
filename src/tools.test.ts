@@ -48,6 +48,7 @@ describe('PYXIS_TOOLS', () => {
       'overview',
       'devices',
       'acquisition',
+      'goals',
       'engagement',
       'time_of_day',
       'features',
@@ -674,6 +675,174 @@ describe('visits', () => {
     [{ channel: 'tv' }, 'channel'],
   ])('refuses the filter %j', (filter, field) => {
     expect(inputProblem('visits', { ...RANGE, ...filter })).toContain(field);
+  });
+});
+
+describe('goals', () => {
+  const SIGN_UP_GOAL = '7c1e2d3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f';
+  const PRICING_GOAL = '8d2f3e4a-5b6c-4d7e-9f80-a1b2c3d4e5f6';
+
+  it('sums up every goal of the project over the range', () => {
+    expect(tool('goals').request(RANGE)).toEqual({
+      path: `/v1/projects/${PROJECT}/goals/summary`,
+      query: { from: '2026-10-08', to: '2026-10-14' },
+    });
+  });
+
+  it('narrows the visits to those that match every filter, under the names the API reads', () => {
+    const query = tool('goals').request({
+      ...RANGE,
+      pages: ['/pricing'],
+      event: 'plan_chosen',
+      property: 'plan=pro',
+      channel: 'paid',
+      device: 'tablet',
+      browser: 'safari',
+      os: 'ios',
+      identity: 'identified',
+      country: 'BR',
+      region: 'BR-BA',
+      city: 'Salvador',
+      source: 'google',
+      campaign: 'launch',
+      failed: false,
+      reached_goal: PRICING_GOAL,
+    }).query;
+
+    expect(query).toEqual({
+      from: '2026-10-08',
+      to: '2026-10-14',
+      path: ['/pricing'],
+      event: 'plan_chosen',
+      property: 'plan=pro',
+      channel: 'paid',
+      device: 'tablet',
+      browser: 'safari',
+      os: 'ios',
+      identity: 'identified',
+      country: 'BR',
+      region: 'BR-BA',
+      city: 'Salvador',
+      source: 'google',
+      campaign: 'launch',
+      failed: false,
+      reached_goal: PRICING_GOAL,
+    });
+  });
+
+  it('asks for the event a property filter belongs to', () => {
+    expect(inputProblem('goals', { ...RANGE, property: 'plan=pro' })).toBe(
+      'property filters the values of an event: give event too.',
+    );
+  });
+
+  it('asks for the region a city filter belongs to', () => {
+    expect(inputProblem('goals', { ...RANGE, city: 'Salvador' })).toBe(
+      'city is matched inside a region: give region too.',
+    );
+  });
+
+  it.each([
+    [{ reached_goal: 'goal-1' }, 'reached_goal'],
+    [{ to: undefined }, 'to'],
+    [{ os: 'symbian' }, 'os'],
+  ])('refuses %j, naming the field', (args, field) => {
+    expect(inputProblem('goals', { ...RANGE, ...args })).toContain(field);
+  });
+
+  it('says the first goal is the one the reports count, and that it only reads goals', () => {
+    const description = tool('goals').description;
+
+    expect(description).toContain('The first goal (goal 1)');
+    expect(description).toContain("the project's former conversion event");
+    expect(description).toContain('this tool only reads them');
+  });
+
+  it('keeps each goal with its numbers, in order, without its creation time', () => {
+    const body = {
+      visits: 120,
+      goals: [
+        {
+          id: SIGN_UP_GOAL,
+          name: 'Sign-up',
+          type: 'event',
+          event: 'signup_completed',
+          path: null,
+          position: 1,
+          created_at: '2026-11-05T01:54:00.000Z',
+          conversions: 14,
+          converting_visits: 12,
+          conversion_rate: 0.1,
+        },
+        {
+          id: PRICING_GOAL,
+          name: 'Pricing',
+          type: 'page',
+          event: null,
+          path: '/pricing*',
+          position: 3,
+          created_at: '2026-11-05T02:00:00.000Z',
+          conversions: 30,
+          converting_visits: 24,
+          conversion_rate: 0.2,
+        },
+      ],
+    };
+
+    expect(tool('goals').report(body, NOW)).toEqual({
+      visits: 120,
+      goals: [
+        {
+          id: SIGN_UP_GOAL,
+          name: 'Sign-up',
+          type: 'event',
+          event: 'signup_completed',
+          path: null,
+          position: 1,
+          conversions: 14,
+          converting_visits: 12,
+          conversion_rate: 0.1,
+        },
+        {
+          id: PRICING_GOAL,
+          name: 'Pricing',
+          type: 'page',
+          event: null,
+          path: '/pricing*',
+          position: 3,
+          conversions: 30,
+          converting_visits: 24,
+          conversion_rate: 0.2,
+        },
+      ],
+    });
+  });
+
+  it('answers an empty list for a project with no goal', () => {
+    expect(tool('goals').report({ visits: 7, goals: [] }, NOW)).toEqual({ visits: 7, goals: [] });
+  });
+
+  it('keeps a null rate for a range without visits', () => {
+    const quiet = {
+      id: SIGN_UP_GOAL,
+      name: 'Sign-up',
+      type: 'event',
+      event: 'signup_completed',
+      path: null,
+      position: 1,
+      conversions: 0,
+      converting_visits: 0,
+      conversion_rate: null,
+    };
+
+    expect(tool('goals').report({ visits: 0, goals: [quiet] }, NOW)).toEqual({
+      visits: 0,
+      goals: [quiet],
+    });
+  });
+
+  it('answers nothing for a body it does not recognize', () => {
+    expect(tool('goals').report({ visits: 3, goals: 'none' }, NOW)).toBeUndefined();
   });
 });
 
