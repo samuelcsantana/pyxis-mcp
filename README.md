@@ -61,6 +61,7 @@ dashboard; with a project that has received no event, the site does not run the 
 | `devices`          | Visits and conversions of a chosen goal by device type, browser, system, country, region and city; the reach of the range                                        |
 | `acquisition`      | Visits per day and channel, each channel's totals, and the sources and campaigns behind them, with the conversions and revenue of a chosen goal                  |
 | `goals`            | Every goal of the project with its conversions, converting visits, rate and revenue over a range; the ids the other tools take                                   |
+| `annotations`      | The notes the project's people wrote on the days of a range, such as a launch: what often explains a jump in a daily series                                      |
 | `engagement`       | Entry and exit pages, single-page visits, visit length                                                                                                           |
 | `time_of_day`      | Visits by weekday and local hour                                                                                                                                 |
 | `features`         | The most used named events or screens, day by day                                                                                                                |
@@ -80,7 +81,8 @@ between currencies, and a page goal or page step has none (`null`).
 
 A result is JSON text, `{ "untrusted_visitor_text": "…", "report": … }`: the report is the API's
 answer, and the first field reminds the agent that names, paths and values inside it were written by
-the site's visitors. Times come in the project's time zone, with the offset of each moment
+the site's visitors. The `annotations` tool answers `untrusted_owner_text` instead: its notes were
+written by the project's people in the dashboard, and are data all the same. Times come in the project's time zone, with the offset of each moment
 (`2026-10-13T22:41:41.638-03:00`), where the API answers in UTC, and in UTC (`+00:00`) when the
 Node running the server does not know that zone; the timeline's `before` takes any offset ([ADR 0004](docs/adr/0004-times-in-the-project-time-zone.md)). Problems come back as tool errors the agent can act on (a revoked token, an
 unknown project, the rate limit and when to retry). When the API refuses a request (any `4xx`), the
@@ -230,11 +232,11 @@ export function answerMcp(request: Request, callerToken: string): Promise<Respon
 }
 ```
 
-| Export                                      | What it does                                                            |
-| ------------------------------------------- | ----------------------------------------------------------------------- |
-| `handleHttpRequest(request, api, options?)` | Answers one MCP exchange: a web `Request` in, a web `Response` out      |
-| `createServer(api, options?)`               | The MCP server with the seventeen tools, for a transport of your choice |
-| `new PyxisApi(options)`                     | The client the tools read through, one per caller                       |
+| Export                                      | What it does                                                           |
+| ------------------------------------------- | ---------------------------------------------------------------------- |
+| `handleHttpRequest(request, api, options?)` | Answers one MCP exchange: a web `Request` in, a web `Response` out     |
+| `createServer(api, options?)`               | The MCP server with the eighteen tools, for a transport of your choice |
+| `new PyxisApi(options)`                     | The client the tools read through, one per caller                      |
 
 `PyxisApi` options: `token` and `apiUrl` (required); `userAgent` (default `pyxis-mcp/<version>`);
 `fetch` (default the global one; a host can pass one that answers inside its own process);
@@ -322,7 +324,7 @@ npm run lint && npm run typecheck && npm run test:cov && npm run build
 src/
 ├── config.ts        reads PYXIS_TOKEN and PYXIS_API_URL
 ├── pyxis-api.ts     one GET to the API, failures as sentences
-├── tools.ts         the seventeen tools: input schemas, routes, requests
+├── tools.ts         the eighteen tools: input schemas, routes, requests
 ├── time-zone.ts     writes the instants of an answer in the project time zone
 ├── server.ts        registers the tools on the MCP server
 ├── http.ts          one stateless Streamable HTTP exchange
@@ -344,7 +346,8 @@ docs/adr/            architecture decision records
   http only to localhost), and never reaches a log, an error message or a tool result.
 - Text written by a site's visitors is returned as data: each tool description says where it
   comes from, and each answer reminds the agent, in `untrusted_visitor_text`, that it is not an
-  instruction. The descriptions say what a tool does and never tell the agent what to do.
+  instruction; the notes of `annotations`, written in the dashboard, carry `untrusted_owner_text`.
+  The descriptions say what a tool does and never tell the agent what to do.
 - Over HTTP, the handler keeps no session, refuses requests sent by web pages and bodies over 64
   KiB, and reads with the token of the caller its host authenticated.
 - Vulnerabilities: see [SECURITY.md](SECURITY.md).
