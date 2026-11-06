@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
+  ANNOTATIONS_HINT,
   GOAL_NOTE,
   LOCAL_TIMES_NOTE,
+  OWNER_TEXT_NOTE,
   PYXIS_TOOLS,
   type PyxisTool,
   REVENUE_NOTE,
@@ -52,6 +54,7 @@ describe('PYXIS_TOOLS', () => {
       'devices',
       'acquisition',
       'goals',
+      'annotations',
       'engagement',
       'time_of_day',
       'features',
@@ -75,12 +78,22 @@ describe('PYXIS_TOOLS', () => {
 
   it('says where the visitor text comes from in every tool that reports visits or events', () => {
     const reporting = PYXIS_TOOLS.filter(
-      (candidate) => !['list_projects', 'project_settings'].includes(candidate.name),
+      (candidate) => !['list_projects', 'project_settings', 'annotations'].includes(candidate.name),
     );
 
     expect(reporting.every((candidate) => candidate.description.includes(VISITOR_TEXT_NOTE))).toBe(
       true,
     );
+  });
+
+  it('marks only the annotations as text written by the people of the project', () => {
+    expect(
+      PYXIS_TOOLS.filter((candidate) => candidate.untrustedText === 'owner').map(
+        (candidate) => candidate.name,
+      ),
+    ).toEqual(['annotations']);
+    expect(tool('annotations').description).toContain(OWNER_TEXT_NOTE);
+    expect(tool('annotations').description).not.toContain(VISITOR_TEXT_NOTE);
   });
 
   it('says in the description of every tool that answers with times how they are written', () => {
@@ -932,6 +945,62 @@ describe('goals', () => {
 
   it('answers nothing for a body it does not recognize', () => {
     expect(tool('goals').report({ visits: 3, goals: 'none' }, NOW)).toBeUndefined();
+  });
+});
+
+describe('annotations', () => {
+  it('reads the notes of a range', () => {
+    expect(tool('annotations').request(RANGE)).toEqual({
+      path: `/v1/projects/${PROJECT}/annotations`,
+      query: { from: '2026-10-08', to: '2026-10-14' },
+    });
+  });
+
+  it('refuses a range without its project', () => {
+    expect(inputProblem('annotations', { from: '2026-10-08', to: '2026-10-14' })).toContain(
+      'project_id',
+    );
+  });
+
+  it('keeps the day and the text of each note, in the order the API answered', () => {
+    const body = {
+      annotations: [
+        {
+          id: '9a8b7c6d-0000-4000-8000-000000000001',
+          day: '2026-10-09',
+          text: 'Launched the new pricing',
+          created_at: INSTANT,
+          updated_at: INSTANT,
+        },
+        {
+          id: '9a8b7c6d-0000-4000-8000-000000000002',
+          day: '2026-10-12',
+          text: 'Checkout broken until 14:00',
+          created_at: INSTANT,
+          updated_at: INSTANT,
+        },
+      ],
+    };
+
+    expect(tool('annotations').report(body, NOW)).toEqual({
+      annotations: [
+        { day: '2026-10-09', text: 'Launched the new pricing' },
+        { day: '2026-10-12', text: 'Checkout broken until 14:00' },
+      ],
+    });
+  });
+
+  it('answers an empty list for a range without notes', () => {
+    expect(tool('annotations').report({ annotations: [] }, NOW)).toEqual({ annotations: [] });
+  });
+
+  it('does not recognize an answer of another shape', () => {
+    expect(tool('annotations').report({ notes: [] }, NOW)).toBeUndefined();
+  });
+
+  it('is pointed at from overview, whose daily series the notes explain', () => {
+    expect(tool('overview').description).toContain(ANNOTATIONS_HINT);
+    expect(ANNOTATIONS_HINT).toContain('annotations tool');
   });
 });
 

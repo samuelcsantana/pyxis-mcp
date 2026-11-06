@@ -59,6 +59,17 @@ export const VISITORS = {
   ],
   previous_months: [{ month: '2026-10', first_visit: 6, first_this_month: 4, exact: false }],
 };
+export const ANNOTATIONS = {
+  annotations: [
+    {
+      id: '9a8b7c6d-0000-4000-8000-000000000001',
+      day: '2026-10-12',
+      text: 'Launched the new pricing',
+      created_at: '2026-10-12T13:00:00.000Z',
+      updated_at: '2026-10-12T13:00:00.000Z',
+    },
+  ],
+};
 export const REVENUE = { current: 749.4, previous: 120, daily: [0, 749.4] };
 export const ME = {
   email: 'owner@example.com',
@@ -120,6 +131,10 @@ function answer(seen: SeenRequest[], request: IncomingMessage, response: ServerR
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/goals/summary?`) === true) {
     send(200, GOALS_SUMMARY);
+    return;
+  }
+  if (request.url?.startsWith(`/v1/projects/${PROJECT}/annotations?`) === true) {
+    send(200, ANNOTATIONS);
     return;
   }
   if (request.url?.startsWith(`/v1/projects/${PROJECT}/timeline?`) === true) {
