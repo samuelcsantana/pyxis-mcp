@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.11.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.10.0...v0.11.0) (2026-11-06)
+
+
+### Features
+
+* **tools:** add the annotations tool, the notes on the days of a range ([6684355](https://github.com/samuelcsantana/pyxis-mcp/commit/6684355a8deb551574be0e19ed3285a01c0c1dea))
+
+
+### Documentation
+
+* **readme:** the annotations tool and the owner text notice ([80b6ec5](https://github.com/samuelcsantana/pyxis-mcp/commit/80b6ec5d1762b6baee29e4ceb53d76235d68003d))
+
 ## [0.10.0](https://github.com/samuelcsantana/pyxis-mcp/compare/v0.9.0...v0.10.0) (2026-11-05)
 
 
