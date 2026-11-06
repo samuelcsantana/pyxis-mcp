@@ -11,7 +11,10 @@ const SUCCESS = '200';
 const JSON_MEDIA_TYPE = 'application/json';
 const RESHAPED_ANSWER = 'list_projects';
 const GOALS_TOOL = 'goals';
-const RESHAPED_ANSWERS: readonly string[] = [RESHAPED_ANSWER, GOALS_TOOL];
+const ANNOTATIONS_TOOL = 'annotations';
+const RESHAPED_ANSWERS: readonly string[] = [RESHAPED_ANSWER, GOALS_TOOL, ANNOTATIONS_TOOL];
+const ANNOTATION_TIMES: readonly string[] = ['created_at', 'updated_at'];
+const ANNOTATION_ID = 'id';
 const DASHBOARD_ONLY_ROUTES: readonly string[] = ['/v1/projects/{projectId}/arrivals'];
 const GOAL_LIST_ROUTE = '/v1/projects/{projectId}/goals';
 const GOAL_CREATION_TIME = 'created_at';
@@ -88,6 +91,7 @@ const EVERY_ARGUMENT: Readonly<Record<string, Record<string, unknown>>> = {
     failed: true,
     reached_goal: GOAL,
   },
+  annotations: RANGE,
   engagement: RANGE,
   time_of_day: RANGE,
   features: { ...RANGE, kind: 'screens' },
@@ -326,6 +330,34 @@ describe('the tools against the API contract copied from pyxis-api', () => {
     expect(instantPaths(answerOf(goals))).toEqual([`goals[].${GOAL_CREATION_TIME}`]);
     expect(fieldsOf(summed)).toEqual(expect.arrayContaining(fieldsOf(listed)));
     expect(Object.keys(report.goals[0] ?? {}).sort()).toEqual(fieldsOf(summed).sort());
+  });
+
+  it('annotations keeps the day and the text of a note, leaving out its id and times', () => {
+    const annotations = toolNamed(ANNOTATIONS_TOOL);
+    const note = resolved(answerOf(annotations).properties?.annotations?.items ?? {});
+    const kept = Object.keys(note.properties ?? {}).filter(
+      (key) => key !== ANNOTATION_ID && !ANNOTATION_TIMES.includes(key),
+    );
+    const report = annotations.report(
+      {
+        annotations: [
+          {
+            id: GOAL,
+            day: '2026-10-10',
+            text: 'Launch',
+            created_at: '2026-10-10T12:00:00.000Z',
+            updated_at: '2026-10-10T12:00:00.000Z',
+          },
+        ],
+      },
+      NOW,
+    ) as { readonly annotations: readonly Readonly<Record<string, unknown>>[] };
+
+    expect(instantPaths(answerOf(annotations))).toEqual(
+      ANNOTATION_TIMES.map((time) => `annotations[].${time}`),
+    );
+    expect(note.required).toEqual(expect.arrayContaining(kept));
+    expect(Object.keys(report.annotations[0] ?? {}).sort()).toEqual(kept.sort());
   });
 
   it('let an agent pick the goal counted as conversions wherever the API counts one', () => {

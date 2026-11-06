@@ -6,6 +6,8 @@ import {
   type PyxisTool,
   type ToolRequest,
   ToolInputError,
+  OWNER_TEXT_NOTICE,
+  type UntrustedText,
   VISITOR_TEXT_NOTICE,
 } from './tools.js';
 import { PACKAGE_VERSION } from './version.js';
@@ -38,12 +40,17 @@ function failure(problem: string): CallToolResult {
   return { content: [{ type: 'text', text: problem }], isError: true };
 }
 
-function success(report: unknown): CallToolResult {
+const UNTRUSTED_TEXT_NOTICES: Readonly<Record<UntrustedText, Readonly<Record<string, string>>>> = {
+  visitor: { untrusted_visitor_text: VISITOR_TEXT_NOTICE },
+  owner: { untrusted_owner_text: OWNER_TEXT_NOTICE },
+};
+
+function success(report: unknown, untrustedText: UntrustedText): CallToolResult {
   return {
     content: [
       {
         type: 'text',
-        text: JSON.stringify({ untrusted_visitor_text: VISITOR_TEXT_NOTICE, report }),
+        text: JSON.stringify({ ...UNTRUSTED_TEXT_NOTICES[untrustedText], report }),
       },
     ],
   };
@@ -75,7 +82,7 @@ export async function runTool(
     return failure(outcome.problem);
   }
   const report = tool.report(outcome.body, now);
-  return report === undefined ? failure(UNEXPECTED_ANSWER) : success(report);
+  return report === undefined ? failure(UNEXPECTED_ANSWER) : success(report, tool.untrustedText);
 }
 
 export function createServer(api: PyxisApi, options: ServerOptions = {}): McpServer {
